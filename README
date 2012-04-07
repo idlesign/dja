@@ -1,0 +1,41 @@
+dja
+===
+http://github.com/idlesign/dja/
+
+
+What's that
+-----------
+
+*dja is a bit of Django framework, namely its template engine, ported to PHP.*
+
+The primary aim of the project is a full-featured and as close to the original code 
+as possible port of Django's template engine, thus intoducing this pragmatic template 
+system to PHP developers. 
+
+Yet another goal of dja is to make a land for smooth transitions between frameworks 
+in different programming languages, without a need for template rewrites. 
+That is template designers would be grateful and happy too.
+
+
+Requirements
+------------
+
+1. PHP 5.3
+2. PHPUnit (to be able to run unit tests)
+
+
+Cheers!
+-------
+
+To all the guys from Django team. Without your code there won't be any dja.
+You are great! So, thank you!
+
+
+The tip
+-------
+
+If dja is not what you want, you might be interested in considering other choices, e.g.:
+
+* h2o-php - http://www.h2o-template.org/
+* twig - http://twig.sensiolabs.org/
+
