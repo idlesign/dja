@@ -6,15 +6,15 @@ http://github.com/idlesign/dja/
 What's that
 -----------
 
-*dja is a bit of Django framework, namely its template engine, ported to PHP.*
+*Dja is a bit of Django framework, namely its template engine, ported to PHP.*
 
 The primary aim of the project is a full-featured and as close to the original code 
-as possible port of Django's template engine, thus intoducing this pragmatic template 
-system to PHP developers. 
+as possible port of Django's template engine, thus introducing this pragmatic 
+template system to PHP developers. 
 
 Yet another goal of dja is to make a land for smooth transitions between frameworks 
-in different programming languages, without a need for template rewrites. 
-That is template designers would be grateful and happy too.
+in different programming languages, without a need for template rewrites.
+And, yes, template designers would be grateful and happy too.
 
 
 Requirements
@@ -33,17 +33,34 @@ Django documentation is a good start:
 * Built-in tags and filters - https://docs.djangoproject.com/en/1.4/ref/templates/builtins/
 
 
+Philosophy
+----------
+
+Dja is from Python pragmatic world, it won't bother some PHP rules. It is not 
+as if it is an impolite guest - it tries to be respectful whereever it is doesn't 
+go in confront with dja's inner dja. It operates upon the `necessary 
+and sufficient` principle. It is wilful, so you can leave anytime you feel 
+you had enough. And that's just how dja goes.
+
+Beware stranger: dja doesn't give a damn for your fancy patterns urge; dja 
+doesn't like ugly namespace notations; dja spits on setters and getters;
+dja is worse than the Jabberwocky.
+
+So welcome, or goodby, stranger.
+
+
 Cheers!
 -------
 
 To all the guys from Django team. Without your code there won't be any dja.
-You are great! So, thank you!
+You are great! Thank you!
 
 
 The tip
 -------
 
-If dja is not what you want, you might be interested in considering other choices, e.g.:
+If dja is not what you want, you might be interested in considering other 
+choices, e.g.:
 
 * h2o-php - http://www.h2o-template.org/
 * twig - http://twig.sensiolabs.org/
