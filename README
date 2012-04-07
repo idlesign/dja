@@ -24,6 +24,15 @@ Requirements
 2. PHPUnit (to be able to run unit tests)
 
 
+Templates syntax
+----------------
+
+Django documentation is a good start:
+
+* Syntax overview - https://docs.djangoproject.com/en/1.4/topics/templates/
+* Built-in tags and filters - https://docs.djangoproject.com/en/1.4/ref/templates/builtins/
+
+
 Cheers!
 -------
 
