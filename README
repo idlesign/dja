@@ -3,6 +3,9 @@ dja
 http://github.com/idlesign/dja/
 
 
+**ALPHA stage project. Interfaces might be changed at any moment. Use with care.**
+
+
 What's that
 -----------
 
@@ -31,6 +34,17 @@ Django documentation is a good start:
 
 * Syntax overview - https://docs.djangoproject.com/en/1.4/topics/templates/
 * Built-in tags and filters - https://docs.djangoproject.com/en/1.4/ref/templates/builtins/
+
+
+Usage example
+-------------
+::
+
+  require_once 'dja/dja.php';
+
+  $template = new Template('My template. It counts {{ what }}: {% for item in items %}{{ item }} and {% endfor %}no more. That\'s all, folks!');
+  $context = new Context(array('items' => range(1, 10), 'what'=>'cows'));
+  echo $template->render($context);
 
 
 Philosophy
