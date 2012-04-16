@@ -27,24 +27,10 @@ Requirements
 2. PHPUnit (to be able to run unit tests)
 
 
-Templates syntax
-----------------
-
-Django documentation is a good start:
-
-* Syntax overview - https://docs.djangoproject.com/en/1.4/topics/templates/
-* Built-in tags and filters - https://docs.djangoproject.com/en/1.4/ref/templates/builtins/
-
-
-Usage example
+Documentation
 -------------
-::
 
-  require_once 'dja/dja.php';
-
-  $template = new Template('My template. It counts {{ what }}: {% for item in items %}{{ item }} and {% endfor %}no more. That\'s all, folks!');
-  $context = new Context(array('items' => range(1, 10), 'what'=>'cows'));
-  echo $template->render($context);
+Available online from http://readthedocs.org/docs/dja/en/latest/
 
 
 Philosophy
@@ -68,14 +54,3 @@ Cheers!
 
 To all the guys from Django team. Without your code there won't be any dja.
 You are great! Thank you!
-
-
-The tip
--------
-
-If dja is not what you want, you might be interested in considering other 
-choices, e.g.:
-
-* h2o-php - http://www.h2o-template.org/
-* twig - http://twig.sensiolabs.org/
-
