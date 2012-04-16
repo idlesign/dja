@@ -17,20 +17,20 @@ class DebugLexer extends Lexer {
         foreach ($matches as $match) {
             list($start, $end) = $match->span();
             if ($start > $upto) {
-                $result[] = $this->createToken(py_slice($this->template_string, $upto, $start), array($upto, $start), False);
+                $result[] = $this->createToken(py_slice($this->template_string, $upto, $start), False, array($upto, $start));
                 $upto = $start;
             }
-            $result[] = $this->createToken(py_slice($this->template_string, $start, $end), array($start, $end), True);
+            $result[] = $this->createToken(py_slice($this->template_string, $start, $end), True, array($start, $end));
             $upto = $end;
         }
         $last_bit = py_slice($this->template_string, $upto);
         if ($last_bit) {
-            $result[] = $this->createToken($last_bit, array($upto, $upto + strlen($last_bit)), False);
+            $result[] = $this->createToken($last_bit, False, array($upto, $upto + strlen($last_bit)));
         }
         return $result;
     }
 
-    public function createToken($token_string, $source, $in_tag) {
+    public function createToken($token_string, $in_tag, $source=null) {
         $token = parent::createToken($token_string, $in_tag);
         $token->source = array($this->origin, $source);
         return $token;
@@ -71,7 +71,7 @@ class DebugParser extends Parser {
         return new DebugVariableNode($contents);
     }
 
-    public function extendNodelist($nodelist, $node, $token) {
+    public function extendNodelist(&$nodelist, $node, $token) {
         $node->source = $token->source;
         parent::extendNodelist($nodelist, $node, $token);
     }
@@ -82,7 +82,7 @@ class DebugParser extends Parser {
         throw $this->sourceError($source, $msg);
     }
 
-    public function compileFunctionError($token, &$e) {
+    public function compileFunctionError($token, $e) {
         if (!isset($e->source)) {
             $e->source = $token->source;
         }
