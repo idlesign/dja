@@ -116,6 +116,54 @@ class DjaLoader {
     }
 
     /**
+     * Loads the given template_name and renders it with the given dictionary as
+     * context. The template_name may be a string to load a single template using
+     * get_template, or it may be a tuple to use select_template to find one of
+     * the templates in the list. Returns a string.
+     *
+     * @static
+     *
+     * @param $template_name
+     * @param null|array $dictionary
+     * @param null|Context $context_instance
+     *
+     * @return SafeString
+     * @throws Exception
+     */
+    public static function renderToString($template_name, $dictionary=null, $context_instance=null) {
+        if ($dictionary===null) {
+            $dictionary = array();
+        }
+
+        if (is_array($template_name)) {
+            $t = self::selectTemplate($template_name);
+        } else {
+            $t = self::getTemplate($template_name);
+        }
+
+        if ($context_instance===null) {
+            return $t->render(new Context($dictionary));
+        }
+
+        // Add the dictionary to the context stack, ensuring it gets removed again
+        // to keep the context_instance in the same state it started in.
+        $context_instance->update($dictionary);
+
+        // $r_ is a workaround for PHP missing `finally`.
+        try {
+            $r_ = $t->render($context_instance);
+        } catch (Exception $e) {
+            $r_ = $e;
+        }
+        $context_instance->pop();
+
+        if ($r_ instanceof Exception) {
+            throw $r_;
+        }
+        return $r_;
+    }
+
+    /**
      * Given a list of template names, returns the first that can be loaded.
      *
      * @static

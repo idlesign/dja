@@ -28,6 +28,11 @@ class AppDirectoriesLoader extends BaseLoader {
             $template_dirs = $this->getAppTemplateDirs();
         }
 
+        // It seems no template dirs can be found.
+        if ($template_dirs===null) {
+            $template_dirs = array();
+        }
+
         $dirs_ = array();
         foreach ($template_dirs as $template_dir) {
             $dirs_[] = safe_join($template_dir, $template_name);
