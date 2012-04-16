@@ -90,7 +90,7 @@ class DjaLoader {
      *
      * @param $template_name
      *
-     * @return mixed
+     * @return Template
      */
     public static function getTemplate($template_name) {
         list($template, $origin) = self::findTemplate($template_name);
@@ -122,7 +122,7 @@ class DjaLoader {
      *
      * @param $template_name_list
      *
-     * @return mixed
+     * @return Template
      * @throws TemplateDoesNotExist
      */
     public static function selectTemplate($template_name_list) {
