@@ -82,7 +82,24 @@ class CycleNode extends Node {
 }
 
 
-// TODO DebugNode
+class DebugNode extends Node {
+
+    /**
+     * @param Context $context
+     * @return mixed
+     */
+    public function render($context) {
+        $output = array(
+            'context'=>$context->dicts,
+            'GET'=>$_GET,
+            'POST'=>$_POST,
+            'SERVER'=>$_SERVER,
+            'SESSION'=>$_SESSION,
+            'COOKIE'=>$_COOKIE,
+        );
+        return print_r($output, True);
+    }
+}
 
 
 class FilterNode extends Node {
@@ -856,7 +873,13 @@ $lib->tag('cycle', function(&$parser, $token) {
 // TODO csrf_token
 
 
-// TODO debug
+$lib->tag('debug', function($parser, $token) {
+    /**
+     * @var Parser $parser
+     * @var Token $token
+     */
+    return new DebugNode();
+});
 
 
 $lib->tag('filter', function($parser, $token) {
