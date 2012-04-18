@@ -1,14 +1,63 @@
 <?php
 
 
-class DjaObj {
+/**
+ * Template filter closures wrapper.
+ *
+ * Allows filter closures delayed execution, and serialization,
+ * thus making Template objects serializable too.
+ */
+class DjaFilterClosure {
 
-    public $obj = null;
+    public $closure = null;
+    private $_flt_name = null;
+    private $_clos = null;
 
-    public function __construct($obj) {
-        $this->obj = $obj;
+    public function __construct($filter_name, $closure) {
+        $this->closure = $closure;
+        $this->_flt_name = $filter_name;
     }
 
+    /**
+     * NOTE that we do not actually serialize closures, but rather save
+     * filter function identifier to get an appropriate closure
+     * from imported modules on wakeup.
+     *
+     * @return array
+     */
+    public function __sleep() {
+        $this->_clos = null;
+        if ($this->closure instanceof Closure) {
+            $this->_clos = $this->_flt_name;
+
+        }
+        return array('_clos');
+    }
+
+    public function __wakeup() {
+        if ($this->_clos!==null) {
+            $this->closure = dja_find_filter_closure($this->_clos);
+        }
+    }
+
+}
+
+
+/**
+ * Returns filter closure from previously imported Library module
+ * by filter name.
+ *
+ * @param string $name
+ * @return mixed
+ * @throws DjaException
+ */
+function dja_find_filter_closure($name) {
+    foreach ($GLOBALS['DJA_IMPORTED_MODULES'] as $n=>$content) {
+        if (isset($content->filters[$name])) {
+            return $content->filters[$name]->closure;
+        }
+    }
+    throw new DjaException('Unable to find \'' . $name .'\' filter required for unserialized template rendering.');
 }
 
 

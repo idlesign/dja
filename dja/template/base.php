@@ -562,12 +562,10 @@ class Library {
      * @param Closure $filter_func
      * @param array $flags
      *
-     * @return DjaObj
+     * @return DjaClosure
      */
     public function filter($name, $filter_func, array $flags = array()) {
-        if (!($filter_func instanceof DjaObj)) {
-            $filter_func = new DjaObj($filter_func);
-        }
+        $filter_func = new DjaFilterClosure($name, $filter_func);
         $this->filters[$name] = $filter_func;
         foreach (array('expects_localtime', 'is_safe', 'needs_autoescape') as $attr) {
             if (isset($flags[$attr])) {
@@ -1103,7 +1101,7 @@ class Parser {
     /**
      * @param string $filter_name
      *
-     * @return DjaObj
+     * @return DjaClosure
      * @throws TemplateSyntaxError
      */
     public function findFilter($filter_name) {
@@ -1670,7 +1668,7 @@ class FilterExpression {
                     $args[] = array(True, new Variable($var_arg));
                 }
                 $filter_func = $parser->findFilter($filter_name);
-                self::argsCheck($filter_name, $filter_func->obj, $args);
+                self::argsCheck($filter_name, $filter_func->closure, $args);
                 $filters[] = array($filter_func, $args, $filter_name); // Deliberately add filter name as the third element (used in `filter` tag).
             }
             $upto = $match->end();
@@ -1731,7 +1729,7 @@ class FilterExpression {
                 $obj = localtime($obj, $context->use_tz);
             }
 
-            $func_ = $func->obj;
+            $func_ = $func->closure;
             if (py_getattr($func, 'needs_autoescape', False)) {
                 $new_obj = call_user_func_array($func_, array_merge(array($obj, $context->autoescape), $arg_vals));
             } else {
