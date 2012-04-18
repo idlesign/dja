@@ -40,7 +40,7 @@ at a basic dja usage example:
 
 **Usage example**
 
-When you a bunch of template files on disk and want dja to pick them up and use automatically,
+When you have a bunch of template files on disk and want dja to pick them up and use automatically,
 you can use the following approach:
 
 .. code-block:: php
