@@ -311,10 +311,50 @@ $lib->filter('striptags', function($value) {
  */
 
 
-// TODO dictsort
+function dja_dictsort($a, $b, $key, $reverse=False) {
+    $a_ = isset($a[$key]);
+    $b_ = isset($b[$key]);
+
+    if (!$a_ && !$b_) {
+        $res = 0;
+    } elseif (!$a_) {
+        $res = 1;
+    } elseif (!$b_) {
+        $res = -1;
+    } else {
+        $res = strcmp($a[$key], $b[$key]);
+    }
+
+    if ($reverse) {
+        if ($res<0) {
+            $res = 1;
+        } elseif ($res>0) {
+            $res = -1;
+        }
+    }
+
+    return $res;
+}
 
 
-// TODO dictsortreversed
+$lib->filter('dictsort', function($value, $arg) {
+    if ($arg instanceof SafeString) {
+        $arg = $arg->get();
+    }
+    // TODO Originally Variable.resolve was used as a sort key. Check current impl. validity.
+    usort($value, function ($a, $b) use ($arg) { return dja_dictsort($a, $b, $arg); });
+    return $value;
+}, array('is_safe' => False));
+
+
+$lib->filter('dictsortreversed', function($value, $arg) {
+    if ($arg instanceof SafeString) {
+        $arg = $arg->get();
+    }
+    // TODO Originally Variable.resolve was used as a sort key. Check current impl. validity.
+    usort($value, function ($a, $b) use ($arg) { return dja_dictsort($a, $b, $arg, True); });
+    return $value;
+}, array('is_safe' => False));
 
 
 $lib->filter('first', function($value) {
