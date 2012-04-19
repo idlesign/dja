@@ -566,7 +566,9 @@ $lib->filter('default_if_none', function($value, $arg) {
 }, array('is_safe' => False));
 
 
-// TODO divisibleby
+$lib->filter('divisibleby', function($value, $arg) {
+    return ((int)$value % (int)$arg->get() == 0);
+}, array('is_safe' => False));
 
 
 $lib->filter('yesno', function($value, $arg = null) {
