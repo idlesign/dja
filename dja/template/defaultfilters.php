@@ -564,8 +564,13 @@ $lib->filter('add', function($value, $arg) {
 }, array('is_safe' => False));
 
 
-// TODO get_digit
-
+$lib->filter('get_digit', function($value, $arg) {
+    $arg = (string)$arg;
+    if (!is_numeric($value) || !is_numeric($arg) || $arg<1) {
+        return $value;
+    }
+    return py_arr_get(str_split($value), -$arg, 0);
+}, array('is_safe' => False));
 
 
 /*
