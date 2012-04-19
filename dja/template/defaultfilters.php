@@ -618,7 +618,10 @@ $lib->filter('phone2numeric', function($value) {
 }, array('is_safe' => True));
 
 
-// TODO pprint
+$lib->filter('pprint', function($value) {
+    return print_r($value, true);
+
+}, array('is_safe' => True));
 
 
 
