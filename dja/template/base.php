@@ -698,7 +698,7 @@ class Template implements Iterator {
         if ($r_ instanceof Exception) {
             throw $r_;
         }
-        return $r_;
+        return (string)$r_;
     }
 
 
