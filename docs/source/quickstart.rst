@@ -22,6 +22,8 @@ at a basic dja usage example:
 
 .. code-block:: php
 
+    <?php
+
     // We'll certainly use dja, so we require it.
     require_once 'dja/dja.php';
 
@@ -44,6 +46,8 @@ When you have a bunch of template files on disk and want dja to pick them up and
 you can use the following approach:
 
 .. code-block:: php
+
+    <?php
 
     // Again require dja.
     require_once 'dja/dja.php';
