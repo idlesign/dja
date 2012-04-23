@@ -212,6 +212,20 @@ class DjaBase {
     }
 
     /**
+     * Loads library into dja for further usage in templates.
+     *
+     * @static
+     * @param string $path Path to the library file.
+     * @param string $name Name alias the library from templates.
+     */
+    public static function addLibraryFrom($path, $name) {
+        $lib = self::importLibrary($path);
+        if ($lib) {
+            self::$libraries[$name] = $lib;
+        }
+    }
+
+    /**
      * Return the list of all available template tag modules.
      * Caches the result for faster access.
      *
