@@ -125,56 +125,66 @@ class OperatorPrefix extends TokenBase {
 }
 
 
-/*
- * Operator precedence follows Python.
- * NB - we can get slightly more accurate syntax error messages by not using the
- * same object for '==' and '='.
- * We defer variable evaluation to the lambda to ensure that terms are
- * lazily evaluated using Python's boolean parsing logic.
- */
-$OPERATORS = array(
-    'or' => infix(6, function ($context, $x, $y) {
-        return $x->eval_($context) || $y->eval_($context);
-    }),
-    'and' => infix(7, function ($context, $x, $y) {
-        return $x->eval_($context) && $y->eval_($context);
-    }),
-    'not' => prefix(8, function ($context, $x) {
-        return !$x->eval_($context);
-    }),
-    'in' => infix(9, function ($context, $x, $y) {
-        return in_array($x->eval_($context), $y->eval_($context));
-    }),
-    'not in' => infix(9, function ($context, $x, $y) {
-        return !in_array($x->eval_($context), $y->eval_($context));
-    }),
-    '=' => infix(10, function ($context, $x, $y) {
-        return $x->eval_($context) == $y->eval_($context);
-    }),
-    '==' => infix(10, function ($context, $x, $y) {
-        return $x->eval_($context) == $y->eval_($context);
-    }),
-    '!=' => infix(10, function ($context, $x, $y) {
-        return $x->eval_($context) != $y->eval_($context);
-    }),
-    '>' => infix(10, function ($context, $x, $y) {
-        return $x->eval_($context) > $y->eval_($context);
-    }),
-    '>=' => infix(10, function ($context, $x, $y) {
-        return $x->eval_($context) >= $y->eval_($context);
-    }),
-    '<' => infix(10, function ($context, $x, $y) {
-        return $x->eval_($context) < $y->eval_($context);
-    }),
-    '<=' => infix(10, function ($context, $x, $y) {
-        return $x->eval_($context) <= $y->eval_($context);
-    }),
-);
-// Assign 'id' to each:
-foreach ($OPERATORS as $key => $op) {
-    $op->id = $key;
-    $OPERATORS[$key] = $op;
+function dja_init_operators() {
+
+    /*
+     * Operator precedence follows Python.
+     * NB - we can get slightly more accurate syntax error messages by not using the
+     * same object for '==' and '='.
+     * We defer variable evaluation to the lambda to ensure that terms are
+     * lazily evaluated using Python's boolean parsing logic.
+     */
+    $operators = array(
+        'or' => infix(6, function ($context, $x, $y) {
+            return $x->eval_($context) || $y->eval_($context);
+        }),
+        'and' => infix(7, function ($context, $x, $y) {
+            return $x->eval_($context) && $y->eval_($context);
+        }),
+        'not' => prefix(8, function ($context, $x) {
+            return !$x->eval_($context);
+        }),
+        'in' => infix(9, function ($context, $x, $y) {
+            return in_array($x->eval_($context), $y->eval_($context));
+        }),
+        'not in' => infix(9, function ($context, $x, $y) {
+            return !in_array($x->eval_($context), $y->eval_($context));
+        }),
+        '=' => infix(10, function ($context, $x, $y) {
+            return $x->eval_($context) == $y->eval_($context);
+        }),
+        '==' => infix(10, function ($context, $x, $y) {
+            return $x->eval_($context) == $y->eval_($context);
+        }),
+        '!=' => infix(10, function ($context, $x, $y) {
+            return $x->eval_($context) != $y->eval_($context);
+        }),
+        '>' => infix(10, function ($context, $x, $y) {
+            return $x->eval_($context) > $y->eval_($context);
+        }),
+        '>=' => infix(10, function ($context, $x, $y) {
+            return $x->eval_($context) >= $y->eval_($context);
+        }),
+        '<' => infix(10, function ($context, $x, $y) {
+            return $x->eval_($context) < $y->eval_($context);
+        }),
+        '<=' => infix(10, function ($context, $x, $y) {
+            return $x->eval_($context) <= $y->eval_($context);
+        }),
+    );
+    // Assign 'id' to each:
+    foreach ($operators as $key => $op) {
+        $op->id = $key;
+        $operators[$key] = $op;
+    }
+
+    // Hmm, globals again...
+    $GLOBALS['DJA_OPERATORS'] = $operators;
+
 }
+
+
+dja_init_operators();
 
 
 /**
@@ -221,7 +231,7 @@ class EndToken extends TokenBase {
     }
 }
 
-$EndToken = new EndToken();
+$GLOBALS['DJA_ENDTOKEN'] = new EndToken();
 
 
 class IfParser {
@@ -250,12 +260,11 @@ class IfParser {
     }
 
     public function translateToken($token) {
-        global $OPERATORS;
         try {
-            if (!isset($OPERATORS[$token])) {
+            if (!isset($GLOBALS['DJA_OPERATORS'][$token])) {
                 throw new KeyError();
             }
-            $op = $OPERATORS[$token];
+            $op = $GLOBALS['DJA_OPERATORS'][$token];
         } catch (KeyError $e) {  // KeyError, TypeError
             return $this->createVar($token);
         }
@@ -265,8 +274,7 @@ class IfParser {
 
     public function next() {
         if ($this->pos >= count($this->tokens)) {
-            global $EndToken;
-            return $EndToken;
+            return $GLOBALS['DJA_ENDTOKEN'];
         } else {
             $retval = $this->tokens[$this->pos];
             $this->pos += 1;
