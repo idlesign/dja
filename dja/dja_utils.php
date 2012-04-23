@@ -420,6 +420,7 @@ function conditional_escape($html) {
 
 function import_module($name) {
     $name = str_replace('.', '/', $name);
+    $name = str_replace('/php', '.php', $name);
 
     // Hmm, globals...
 
