@@ -23,6 +23,7 @@ Table of Contents
 
     intro
     quickstart
+    generic
     extending
 
 
