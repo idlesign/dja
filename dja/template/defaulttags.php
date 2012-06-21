@@ -35,7 +35,7 @@ class CommentNode extends Node {
 
     /**
      * @param Context $context
-     * @return string
+     * @return SafeString|string
      */
     public function render($context) {
         return '';
@@ -61,7 +61,7 @@ class CycleNode extends Node {
 
     /**
      * @param Context $context
-     * @return string
+     * @return SafeString|string
      */
     public function render(&$context) {
         $obj_hash = spl_object_hash($this);
@@ -139,7 +139,7 @@ class FirstOfNode extends Node {
 
     /**
      * @param Context $context
-     * @return string
+     * @return SafeString|string
      */
     public function render($context) {
         foreach ($this->vars as $var) {
@@ -186,8 +186,9 @@ class ForNode extends Node {
 
     /**
      * @param Context $context
-     * @return SafeString
+     * @return SafeString|string
      * @throws Exception|TypeError|VariableDoesNotExist
+     * @throws RuntimeError
      */
     public function render($context) {
         if (isset($context['forloop'])) {
@@ -378,7 +379,7 @@ class IfEqualNode extends Node {
 
     /**
      * @param Context $context
-     * @return SafeString
+     * @return SafeString|string
      */
     public function render($context) {
         $val1 = $this->var1->resolve($context, True);
@@ -476,7 +477,7 @@ class RegroupNode extends Node {
 
     /**
      * @param Context $context
-     * @return string
+     * @return SafeString|string
      */
     public function render($context) {
         $obj_list = $this->target->resolve($context, True);
@@ -518,7 +519,7 @@ class LoadNode extends Node {
 
     /**
      * @param Context $context
-     * @return string
+     * @return SafeString|string
      */
     public function render($context) {
         return '';
@@ -538,7 +539,7 @@ class NowNode extends Node {
 
     /**
      * @param Context $context
-     * @return string
+     * @return SafeString|string
      */
     public function render($context) {
         // TODO Maybe get rid of USE_TZ?
@@ -568,7 +569,7 @@ class SpacelessNode extends Node {
 
     /**
      * @param Context $context
-     * @return string
+     * @return SafeString|string
      */
     public function render($context) {
         return strip_spaces_between_tags(trim($this->nodelist->render($context)));
@@ -598,7 +599,7 @@ class TemplateTagNode extends Node {
 
     /**
      * @param Context $context
-     * @return string
+     * @return SafeString|string
      */
     public function render($context) {
         return py_arr_get(self::$mapping, $this->tagtype, '');
@@ -625,7 +626,7 @@ class URLNode extends Node {
 
     /**
      * @param Context $context
-     * @return string
+     * @return SafeString|string
      * @throws UrlNoReverseMatch
      */
     public function render($context) {
@@ -652,7 +653,8 @@ class URLNode extends Node {
          */
         $url = '';
         try {
-            $url = Dja::url_reverse($view_name, null, $args, $kwargs, null, $context->current_app);
+            $url_manager = Dja::getUrlManager();
+            $url = $url_manager->reverse($view_name, null, $args, $kwargs, null, $context->current_app);
         } catch (UrlNoReverseMatch $e) {
             if ($this->asvar === null) {
                 throw $e;
@@ -684,7 +686,7 @@ class WidthRatioNode extends Node {
 
     /**
      * @param Context $context
-     * @return string
+     * @return SafeString|string
      * @throws TemplateSyntaxError
      */
     public function render($context) {
@@ -739,7 +741,7 @@ class WithNode extends Node {
 
     /**
      * @param Context $context
-     * @return SafeString
+     * @return SafeString|string
      */
     public function render($context) {
         $values = array();
@@ -1044,7 +1046,7 @@ class TemplateIfParser extends IfParser {
 
     /**
      * @param Token $value
-     * @return TemplateLiteral
+     * @return TemplateLiteral|Literal
      */
     public function createVar($value) {
         return new TemplateLiteral($this->template_parser->compileFilter($value), $value);
@@ -1215,7 +1217,7 @@ $lib->tag('templatetag', function($parser, $token) {
      * @var Parser $parser
      * @var Token $token
      */
-    $bits = py_str_split( $token->contents);
+    $bits = py_str_split($token->contents);
     if (count($bits) != 2) {
         throw new TemplateSyntaxError('\'templatetag\' statement takes one argument');
     }
@@ -1227,12 +1229,12 @@ $lib->tag('templatetag', function($parser, $token) {
 });
 
 
-$lib->tag('url', function($parser, $token) {  // TODO revise
+$lib->tag('url', function($parser, $token) {
    /**
     * @var Parser $parser
     * @var Token $token
     */
-    $bits = py_str_split( $token->contents);
+    $bits = $token->splitContents();
     if (count($bits) < 2) {
         throw new TemplateSyntaxError('\'url\' takes at least one argument (path to a view)');
     }

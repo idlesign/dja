@@ -24,6 +24,11 @@ DjaBase::addToBuiltins('defaultfilters');
 
 class Dja {
 
+    /**
+     * Dja default settings.
+     *
+     * @var array
+     */
     private static $_settings_default = array(
 
         'LANGUAGE_CODE' => 'en-us',
@@ -56,45 +61,106 @@ class Dja {
      * @var null|array
      */
     private static $_settings = null;
+    /**
+     * @var null|IDjaUrlDispatcher
+     */
+    private static $_url_manager = null;
 
-    public static function setSettings($settings = null) {
+    /**
+     * Sets Dja settings values.
+     *
+     * @static
+     * @param array|null $settings
+     */
+    public static function setSettings(array $settings = null) {
         self::$_settings = self::$_settings_default;
         if ($settings !== null) {
             self::$_settings = array_merge(self::$_settings, $settings);
         }
     }
 
-    public static function setSetting($n, $v) {
+    /**
+     * Sets Dja setting value.
+     *
+     * @static
+     * @param string $name
+     * @param mixed $value
+     * @throws DjaException
+     */
+    public static function setSetting($name, $value) {
         if (self::$_settings === null) {
             self::setSettings();
         }
-        if (!in_array($n, array_keys(self::$_settings_default))) {
-            throw new DjaException('Unable to set an uknown setting \'' . $n . '\'.');
+        if (!in_array($name, array_keys(self::$_settings_default))) {
+            throw new DjaException('Unable to set an unknown setting \'' . $name . '\'.');
         }
-        self::$_settings[$n] = $v;
+        self::$_settings[$name] = $value;
     }
 
-    public static function getSetting($n) {
+    /**
+     * Returns Dja settings value.
+     *
+     * @static
+     * @param string $name Setting name.
+     * @return mixed
+     * @throws DjaException
+     */
+    public static function getSetting($name) {
         if (self::$_settings === null) {
             self::setSettings();
         }
-        if (!isset(self::$_settings[$n]) && !key_exists($n, self::$_settings)) {
-            throw new DjaException('Unable to get an uknown setting \'' . $n . '\'.');
+        if (!isset(self::$_settings[$name]) && !array_key_exists($name, self::$_settings)) {
+            throw new DjaException('Unable to get an unknown setting \'' . $name . '\'.');
         }
-        return self::$_settings[$n];
+        return self::$_settings[$name];
     }
 
+    /**
+     * Returns Dja root directory.
+     *
+     * @static
+     * @return string
+     */
     public static function getEnginePath() {
         return DJA_ROOT;
     }
 
+    /**
+     * Returns Dja version number.
+     *
+     * @static
+     * @return string
+     */
     public static function getVersion() {
         return DJA_VERSION;
     }
 
-    public static function url_reverse($viewname, $urlconf=null, $args=null, $kwargs=null, $prefix=null, $current_app=null) {
-        // TODO Call generic url manager interface.
-        return;
+    /**
+     * Returns URL Manager object used by Dja to reverse URLs.
+     *
+     * @static
+     * @return IDjaUrlDispatcher|null
+     */
+    public static function getUrlManager() {
+        if (self::$_url_manager === null) {
+            self::$_url_manager = new DjaUrlDispatcher();
+        }
+        return self::$_url_manager;
+    }
+
+    /**
+     * Sets URL Manager object used by Dja to reverse URLs.
+     * Such an object is required to implement IDjaUrlManager interface.
+     *
+     * @static
+     * @param IDjaUrlDispatcher $obj
+     * @throws DjaException
+     */
+    public static function setUrlManager($obj) {
+        if (!($obj instanceof IDjaUrlDispatcher)){
+            throw new DjaException('Unable to use object not implementing IDjaUrlManager as URL Manager.');
+        }
+        self::$_url_manager = $obj;
     }
 
     public static function getCache($key) {

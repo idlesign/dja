@@ -47,10 +47,7 @@ $lib->filter('floatformat', function($text, $arg=-1) {
 
 //stringfilter
 $lib->filter('iriencode', function($value) {
-    $safe = get_urlencode_safe();
-    $value = urlencode($value);
-    $value = str_replace(array_keys($safe), array_values($safe), $value);
-    return $value;
+    return iri_to_uri($value);
 }, array('is_safe' => True));
 
 
@@ -147,33 +144,12 @@ $lib->filter('upper', function($value) {
 }, array('is_safe' => False));
 
 
-function get_urlencode_safe($filter=null) {
-    $safe = array('%2F'=>'/', '%23'=>'#', '%25'=>'%', '%5B'=>'[', '%5D'=>']',
-        '%3D'=>'=', '%3A'=>':', '%3B'=>';', '%24'=>'$', '%26'=>'&',
-        '%28'=>'(', '%29'=>')', '%2B'=>'+', '%2C'=>',', '%21'=>'!',
-        '%3F'=>'?', '%2A'=>'*', '%40'=>'@', '%27'=>'\'', '%7E'=>'~',
-    );
-    if ($filter) {
-        $f = function($i) use ($filter) {
-            return in_array($i, $filter);
-        };
-        $safe = array_filter($safe, $f);
-    }
-    return $safe;
-}
-
-
 //stringfilter
 $lib->filter('urlencode', function($value, $safe=null) {
-    if ($safe!==null) {
-        $safe = str_split($safe);
-    } else {
-        $safe = array('/');
+    if ($safe===null) {
+        $safe = '/';
     }
-    $safe = get_urlencode_safe($safe);
-    $value = urlencode($value);
-    $value = str_replace(array_keys($safe), array_values($safe), $value);
-    return $value;
+    return py_urllib_quote($value, $safe);
 
 }, array('is_safe' => False));
 

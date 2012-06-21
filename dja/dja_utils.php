@@ -44,6 +44,124 @@ class DjaFilterClosure {
 
 
 /**
+ * Interface for custom Dja URL Dispatcher class to implement.
+ */
+interface IDjaUrlDispatcher {
+    /**
+     * Resolvers URL from view alias and arguments.
+     *
+     * Used to reverse URLs with `url` tag in templates.
+     * Should throw UrlNoReverseMatch if no match found.
+     *
+     * @abstract
+     * @param string $viewname  View alias (corresponds to view name or path in Django).
+     * @param null $urlconf
+     * @param null|array $args  Positional arguments.
+     * @param null|array $kwargs  Keyword arguments.
+     * @param null $prefix
+     * @param null $current_app
+     * @return string
+     * @throws UrlNoReverseMatch
+     */
+    public function reverse($viewname, $urlconf=null, $args=null, $kwargs=null, $prefix=null, $current_app=null);
+}
+
+
+/**
+ * Default Dja URL Dispatcher.
+ */
+class DjaUrlDispatcher implements IDjaUrlDispatcher {
+
+    /**
+     * Array with  URL patter to alias relations.
+     *
+     * @var array
+     */
+    private $_rules = array();
+
+    /**
+     * This URL Dispatcher roughly mimics Django URL dispatcher.
+     * It operates over a set of rules - URL Patterns (regular expressions) to URL alias mappings.
+     *
+     * @param array|null $rules
+     */
+    public function __construct(array $rules=null) {
+        if ($rules!==null) {
+            $this->setRules($rules);
+        }
+    }
+
+    /**
+     * Sets dispatcher rules: an array of URL Patterns (regular expressions) to URL alias mappings.
+     * Example:
+     *
+     * array(
+     *     '~^/article/(?P<user_id>\d+)/(?P<slug>[^/]+)/$~' => 'user_article',
+     *     '~^/client/(\d+)/$~' => 'client_details',
+     * );
+     *
+     *
+     * @param array $rules
+     */
+    public function setRules(array $rules) {
+        $this->_rules = $rules;
+    }
+
+    /**
+     * Converts URL pattern (regular expression) into URL.
+     *
+     * @param string $url_pattern URL  Regexp.
+     * @param array $args_from_pattern  Argument placeholders found in URL Regexp.
+     * @param array $context  Data to populate url pattern with.
+     * @return mixed|string
+     */
+    private function populatePattern($url_pattern, $args_from_pattern, $context) {
+        $populated = trim($url_pattern, $url_pattern[0]);
+        $populated = trim($populated, '^$');
+
+        foreach ($args_from_pattern as $name=>$re_sub) {
+            $populated = substr_replace($populated, $context[$name], strpos($populated, $re_sub), strlen($re_sub));
+            $populated = str_replace($re_sub, $context[$name], $populated);
+        }
+
+        return $populated;
+    }
+
+    public function reverse($viewname, $urlconf=null, $args=null, $kwargs=null, $prefix=null, $current_app=null) {
+        $indexes = array_keys($this->_rules, $viewname);
+        $re_params = '~(?P<ngroup>\((\?P<(?P<name>[^>]+)>)?[^)]+\))~';
+        foreach ($indexes as $url_pattern) {
+            $matched = preg_match_all($re_params, $url_pattern, $matches, PREG_SET_ORDER);
+            if ($matched!==false) {
+                $args_from_pattern = array();
+                foreach ($matches as $match) {
+                    if (isset($match['name'])) {
+                        $args_from_pattern[$match['name']] = $match['ngroup'];
+                    } else {
+                        $args_from_pattern[] = $match['ngroup'];
+                    }
+                }
+
+                $unknown_args = array_diff(array_keys($args_from_pattern), array_keys($kwargs));
+                if (count($kwargs)==$matched && empty($unknown_args)) {
+                    return iri_to_uri($this->populatePattern($url_pattern, $args_from_pattern, $kwargs));
+                } elseif (count($args)==$matched) {
+                    return iri_to_uri($this->populatePattern($url_pattern, array_values($args_from_pattern), $args));
+                }
+
+            }
+        }
+
+        $kwargs_flat = array();
+        foreach ($kwargs as $k=>$v) {
+            $kwargs_flat[] = $k . '=' . $v;
+        }
+        throw new UrlNoReverseMatch(sprintf('Reverse for \'%s\' with arguments \'%s\' and keyword arguments \'%s\' not found.', $viewname, join(', ', $args), join(', ', $kwargs_flat)));
+    }
+}
+
+
+/**
  * Returns filter closure from previously imported Library module
  * by filter name.
  *
@@ -494,8 +612,26 @@ function linebreaks($value, $autoescape=False) {
 }
 
 
+/**
+ * Replaces newlines of different styles with \n.
+ *
+ * @param string $text
+ * @return string|null
+ */
 function normalize_newlines($text) {
    return preg_replace("~\r\n|\r|\n~", "\n", $text);
+}
+
+
+/**
+ * Converts an Internationalized Resource Identifier (IRI) portion to a URI
+ * portion that is suitable for inclusion in a URL.
+ *
+ * @param string $iri
+ * @return mixed|string
+ */
+function iri_to_uri($iri) {
+    return py_urllib_quote($iri, "/#%[]=:;$&()+,!?*@'~");
 }
 
 

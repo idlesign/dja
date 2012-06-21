@@ -1688,7 +1688,7 @@ class FilterExpression {
             $upto = $match->end();
         }
 
-        if ($upto != strlen($token)) {
+        if ($upto != mb_strlen($token, 'utf-8')) {
             throw new TemplateSyntaxError("Could not parse the remainder: '" . py_slice($token, $upto) . "' from '" . $token . "'");
         }
 

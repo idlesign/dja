@@ -120,7 +120,7 @@ function py_slice($subj, $from = null, $till = null, $step = 1) {
         $subj = strrev($subj); // TODO Check unicode handling.
     }
 
-    $len = strlen($subj);
+    $len = mb_strlen($subj, 'utf-8');
     if ($till === null) {
         $till = $len;
     }
@@ -128,7 +128,35 @@ function py_slice($subj, $from = null, $till = null, $step = 1) {
     if ($sub_len < 0) {
         $sub_len = $len - (abs($sub_len));
     }
-    return substr($subj, $from, $sub_len);
+    return mb_substr($subj, $from, $sub_len, 'utf-8');
+}
+
+
+/**
+ * Replaces special characters in string using the %xx escape.
+ *
+ * @param $s
+ * @param null|string $safe  Characters that should not be quoted.
+ * @return mixed|string
+ */
+function py_urllib_quote($s, $safe=null) {
+    $s = rawurlencode($s);
+    if ($safe!==null) {
+        $safe = str_split($safe);
+        $chars = array('%2F'=>'/', '%23'=>'#', '%25'=>'%', '%5B'=>'[', '%5D'=>']',
+            '%3D'=>'=', '%3A'=>':', '%3B'=>';', '%24'=>'$', '%26'=>'&',
+            '%28'=>'(', '%29'=>')', '%2B'=>'+', '%2C'=>',', '%21'=>'!',
+            '%3F'=>'?', '%2A'=>'*', '%40'=>'@', '%27'=>'\'', '%7E'=>'~',
+        );
+        if ($safe) {
+            $f = function($i) use ($safe) {
+                return in_array($i, $safe);
+            };
+            $chars = array_filter($chars, $f);
+        }
+        $s = str_replace(array_keys($chars), array_values($chars), $s);
+    }
+    return $s;
 }
 
 

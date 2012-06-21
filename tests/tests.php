@@ -9,6 +9,20 @@ require_once 'filters.php';
 import_module('loaders/filesystem');
 import_module('loaders/app_directories');
 
+// Set url no test dja's generic url manager.
+Dja::setUrlManager(new DjaUrlDispatcher(
+    array(
+        '~^/url_tag/client/(?P<id>\d+)/(?P<action>[^/]+)/$~' => 'regressiontests.templates.views.client_action',
+        '~^/url_tag/client/(?P<client_id>\d+)/(?P<action>[^/]+)/$~' => 'regressiontests.templates.views.client_action',
+        '~^/url_tag/client/([\d,]+)/$~' => 'regressiontests.templates.views.client',
+        '~^/url_tag/$~' => 'regressiontests.templates.views.index',
+        '~^/url_tag/named-client/(\d+)/$~' => 'named.client',
+        '~^/url_tag/Юникод/(\w+)/$~' => 'метка_оператора',
+        '~^/url_tag/Юникод/(?P<tag>\S+)/$~' => 'метка_оператора_2',
+        //'~^/url_tag/Юникод/(?P<tag>\S+)/$~' => 'regressiontests.templates.views.client2',
+    )
+));
+
 
 /*
  * Custom template tag for tests
@@ -365,7 +379,7 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
         $overlapping_names = array();
         $tkeys_ = array_keys($template_tests);
         foreach ($filter_tests as $name=>$v) {
-            if (key_exists($name, $tkeys_)) {
+            if (array_key_exists($name, $tkeys_)) {
                 $overlapping_names[] = $name;
             }
         }
@@ -473,7 +487,7 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
                 }
                 $cache_loader->reset();
             }
-            if (key_exists('LANGUAGE_CODE', $vals[1])) {
+            if (array_key_exists('LANGUAGE_CODE', $vals[1])) {
                 deactivate();
             }
             if (DjaBase::$invalid_var_format_string) {
@@ -994,7 +1008,7 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
             'include-error04'=>array('{% include "basic-syntax01" something_random %}', array(), 'TemplateSyntaxError'),
             'include-error05'=>array('{% include "basic-syntax01" foo="duplicate" foo="key" %}', array(), 'TemplateSyntaxError'),
             'include-error06'=>array('{% include "basic-syntax01" only only %}', array(), 'TemplateSyntaxError'),
-            
+
             // ### INCLUSION ERROR REPORTING #############################################
             'include-fail1'=>array('{% load bad_tag %}{% badtag %}', array(), 'RuntimeError'),
             'include-fail2'=>array('{% load broken_tag %}', array(), 'TemplateSyntaxError'),
@@ -1150,7 +1164,7 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
             'load10'=>array("{% load echo from bad_library %}", array(), 'TemplateSyntaxError'),
             'load11'=>array("{% load subpackage.echo_invalid %}", array(), 'TemplateSyntaxError'),
             'load12'=>array("{% load subpackage.missing %}", array(), 'TemplateSyntaxError'),
-            
+
             // {% spaceless %} tag
             'spaceless01'=>array("{% spaceless %} <b>    <i> text </i>    </b> {% endspaceless %}", array(), "<b><i> text </i></b>"),
             'spaceless02'=>array("{% spaceless %} <b> \n <i> text </i> \n </b> {% endspaceless %}", array(), "<b><i> text </i></b>"),
@@ -1158,9 +1172,9 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
             'spaceless04'=>array("{% spaceless %}<b>   <i>{{ text }}</i>  </b>{% endspaceless %}", array('text'=>'This & that'), "<b><i>This &amp; that</i></b>"),
             'spaceless05'=>array("{% autoescape off %}{% spaceless %}<b>   <i>{{ text }}</i>  </b>{% endspaceless %}{% endautoescape %}", array('text'=>'This & that'), "<b><i>This & that</i></b>"),
             'spaceless06'=>array("{% spaceless %}<b>   <i>{{ text|safe }}</i>  </b>{% endspaceless %}", array('text'=>'This & that'), "<b><i>This & that</i></b>"),
-            
+
             // ------------------------------------------ I18N
-            
+
             // ### HANDLING OF TEMPLATE_STRING_IF_INVALID ###################################
 
             'invalidstr01'=>array('{{ var|default:"Foo" }}', array(), array('Foo','INVALID')),
@@ -1315,105 +1329,104 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
 
              // ### URL TAG ########################################################
 
-// TODO Implement generic url manager.
-//            // Successes
-//            'legacyurl02'=>array('{% url regressiontests.templates.views.client_action id=client.id,action="update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'legacyurl02a'=>array('{% url regressiontests.templates.views.client_action client.id,"update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'legacyurl02b'=>array("{% url regressiontests.templates.views.client_action id=client.id,action='update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'legacyurl02c'=>array("{% url regressiontests.templates.views.client_action client.id,'update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'legacyurl10'=>array('{% url regressiontests.templates.views.client_action id=client.id,action="two words" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/two%20words/'),
-//            'legacyurl13'=>array('{% url regressiontests.templates.views.client_action id=client.id, action=arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
-//            'legacyurl14'=>array('{% url regressiontests.templates.views.client_action client.id, arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
-//            'legacyurl16'=>array('{% url regressiontests.templates.views.client_action action="update",id="1" %}', array(), '/url_tag/client/1/update/'),
-//            'legacyurl16a'=>array("{% url regressiontests.templates.views.client_action action='update',id='1' %}", array(), '/url_tag/client/1/update/'),
-//            'legacyurl17'=>array('{% url regressiontests.templates.views.client_action client_id=client.my_id,action=action %}', array('client'=>array('my_id'=>1), 'action'=>'update'), '/url_tag/client/1/update/'),
-//
-//            'old-url01'=>array('{% url regressiontests.templates.views.client client.id %}', array('client'=>array('id'=>1)), '/url_tag/client/1/'),
-//            'old-url02'=>array('{% url regressiontests.templates.views.client_action id=client.id action="update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'old-url02a'=>array('{% url regressiontests.templates.views.client_action client.id "update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'old-url02b'=>array("{% url regressiontests.templates.views.client_action id=client.id action='update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'old-url02c'=>array("{% url regressiontests.templates.views.client_action client.id 'update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'old-url03'=>array('{% url regressiontests.templates.views.index %}', array(), '/url_tag/'),
-//            'old-url04'=>array('{% url named.client client.id %}', array('client'=>array('id'=>1)), '/url_tag/named-client/1/'),
-//            'old-url05'=>array('{% url метка_оператора v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-//            'old-url06'=>array('{% url метка_оператора_2 tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-//            'old-url07'=>array('{% url regressiontests.templates.views.client2 tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-//            'old-url08'=>array('{% url метка_оператора v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-//            'old-url09'=>array('{% url метка_оператора_2 tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-//            'old-url10'=>array('{% url regressiontests.templates.views.client_action id=client.id action="two words" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/two%20words/'),
-//            'old-url11'=>array('{% url regressiontests.templates.views.client_action id=client.id action="==" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/==/'),
-//            'old-url12'=>array('{% url regressiontests.templates.views.client_action id=client.id action="," %}', array('client'=>array('id'=>1)), '/url_tag/client/1/,/'),
-//            'old-url13'=>array('{% url regressiontests.templates.views.client_action id=client.id action=arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
-//            'old-url14'=>array('{% url regressiontests.templates.views.client_action client.id arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
-//            'old-url15'=>array('{% url regressiontests.templates.views.client_action 12 "test" %}', array(), '/url_tag/client/12/test/'),
-//            'old-url16'=>array('{% url regressiontests.templates.views.client "1,2" %}', array(), '/url_tag/client/1,2/'),
-//
-//            // Failures
-//            'old-url-fail01'=>array('{% url %}', array(), 'TemplateSyntaxError'),
-//            'old-url-fail02'=>array('{% url no_such_view %}', array(), array('DjaUrlNoReverseMatch', 'DjaUrlNoReverseMatch')),
-//            'old-url-fail03'=>array('{% url regressiontests.templates.views.client %}', array(), array('DjaUrlNoReverseMatch', 'DjaUrlNoReverseMatch')),
-//            'old-url-fail04'=>array('{% url view id, %}', array(), 'TemplateSyntaxError'),
-//            'old-url-fail05'=>array('{% url view id= %}', array(), 'TemplateSyntaxError'),
-//            'old-url-fail06'=>array('{% url view a.id=id %}', array(), 'TemplateSyntaxError'),
-//            'old-url-fail07'=>array('{% url view a.id!id %}', array(), 'TemplateSyntaxError'),
-//            'old-url-fail08'=>array('{% url view id="unterminatedstring %}', array(), 'TemplateSyntaxError'),
-//            'old-url-fail09'=>array('{% url view id=", %}', array(), 'TemplateSyntaxError'),
-//
-//            // {% url ... as var %}
-//            'old-url-asvar01'=>array('{% url regressiontests.templates.views.index as url %}', array(), ''),
-//            'old-url-asvar02'=>array('{% url regressiontests.templates.views.index as url %}{{ url }}', array(), '/url_tag/'),
-//            'old-url-asvar03'=>array('{% url no_such_view as url %}{{ url }}', array(), ''),
-//
-//            // forward compatibility
-//            // Successes
-//            'url01'=>array('{% load url from future %}{% url "regressiontests.templates.views.client" client.id %}', array('client'=>array('id'=>1)), '/url_tag/client/1/'),
-//            'url02'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" id=client.id action="update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'url02a'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" client.id "update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'url02b'=>array("{% load url from future %}{% url 'regressiontests.templates.views.client_action' id=client.id action='update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'url02c'=>array("{% load url from future %}{% url 'regressiontests.templates.views.client_action' client.id 'update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
-//            'url03'=>array('{% load url from future %}{% url "regressiontests.templates.views.index" %}', array(), '/url_tag/'),
-//            'url04'=>array('{% load url from future %}{% url "named.client" client.id %}', array('client'=>array('id'=>1)), '/url_tag/named-client/1/'),
-//            'url05'=>array('{% load url from future %}{% url "метка_оператора" v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-//            'url06'=>array('{% load url from future %}{% url "метка_оператора_2" tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-//            'url07'=>array('{% load url from future %}{% url "regressiontests.templates.views.client2" tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-//            'url08'=>array('{% load url from future %}{% url "метка_оператора" v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-//            'url09'=>array('{% load url from future %}{% url "метка_оператора_2" tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
-//            'url10'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" id=client.id action="two words" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/two%20words/'),
-//            'url11'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" id=client.id action="==" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/==/'),
-//            'url12'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" id=client.id action="," %}', array('client'=>array('id'=>1)), '/url_tag/client/1/,/'),
-//            'url13'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" id=client.id action=arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
-//            'url14'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" client.id arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
-//            'url15'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" 12 "test" %}', array(), '/url_tag/client/12/test/'),
-//            'url18'=>array('{% load url from future %}{% url "regressiontests.templates.views.client" "1,2" %}', array(), '/url_tag/client/1,2/'),
-//
-//            'url19'=>array('{% load url from future %}{% url named_url client.id %}', array('named_url'=>'regressiontests.templates.views.client', 'client'=>array('id'=>1)), '/url_tag/client/1/'),
-//            'url20'=>array('{% load url from future %}{% url url_name_in_var client.id %}', array('url_name_in_var'=>'named.client', 'client'=>array('id'=>1)), '/url_tag/named-client/1/'),
-//
-//            // Failures
-//            'url-fail01'=>array('{% load url from future %}{% url %}', array(), 'TemplateSyntaxError'),
-//            'url-fail02'=>array('{% load url from future %}{% url "no_such_view" %}', array(), array('DjaUrlNoReverseMatch', 'DjaUrlNoReverseMatch')),
-//            'url-fail03'=>array('{% load url from future %}{% url "regressiontests.templates.views.client" %}', array(), array('DjaUrlNoReverseMatch', 'DjaUrlNoReverseMatch')),
-//            'url-fail04'=>array('{% load url from future %}{% url "view" id, %}', array(), 'TemplateSyntaxError'),
-//            'url-fail05'=>array('{% load url from future %}{% url "view" id= %}', array(), 'TemplateSyntaxError'),
-//            'url-fail06'=>array('{% load url from future %}{% url "view" a.id=id %}', array(), 'TemplateSyntaxError'),
-//            'url-fail07'=>array('{% load url from future %}{% url "view" a.id!id %}', array(), 'TemplateSyntaxError'),
-//            'url-fail08'=>array('{% load url from future %}{% url "view" id="unterminatedstring %}', array(), 'TemplateSyntaxError'),
-//            'url-fail09'=>array('{% load url from future %}{% url "view" id=", %}', array(), 'TemplateSyntaxError'),
-//
-//            'url-fail11'=>array('{% load url from future %}{% url named_url %}', array(), array('DjaUrlNoReverseMatch', 'DjaUrlNoReverseMatch')),
-//            'url-fail12'=>array('{% load url from future %}{% url named_url %}', array('named_url'=>'no_such_view'), array('DjaUrlNoReverseMatch', 'DjaUrlNoReverseMatch')),
-//            'url-fail13'=>array('{% load url from future %}{% url named_url %}', array('named_url'=>'regressiontests.templates.views.client'), array('DjaUrlNoReverseMatch', 'DjaUrlNoReverseMatch')),
-//            'url-fail14'=>array('{% load url from future %}{% url named_url id, %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
-//            'url-fail15'=>array('{% load url from future %}{% url named_url id= %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
-//            'url-fail16'=>array('{% load url from future %}{% url named_url a.id=id %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
-//            'url-fail17'=>array('{% load url from future %}{% url named_url a.id!id %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
-//            'url-fail18'=>array('{% load url from future %}{% url named_url id="unterminatedstring %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
-//            'url-fail19'=>array('{% load url from future %}{% url named_url id=", %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
-//
-//            // {% url ... as var %}
-//            'url-asvar01'=>array('{% load url from future %}{% url "regressiontests.templates.views.index" as url %}', array(), ''),
-//            'url-asvar02'=>array('{% load url from future %}{% url "regressiontests.templates.views.index" as url %}{{ url }}', array(), '/url_tag/'),
-//            'url-asvar03'=>array('{% load url from future %}{% url "no_such_view" as url %}{{ url }}', array(), ''),
+            // Successes
+            'legacyurl02'=>array('{% url regressiontests.templates.views.client_action id=client.id,action="update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'legacyurl02a'=>array('{% url regressiontests.templates.views.client_action client.id,"update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'legacyurl02b'=>array("{% url regressiontests.templates.views.client_action id=client.id,action='update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'legacyurl02c'=>array("{% url regressiontests.templates.views.client_action client.id,'update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'legacyurl10'=>array('{% url regressiontests.templates.views.client_action id=client.id,action="two words" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/two%20words/'),
+            'legacyurl13'=>array('{% url regressiontests.templates.views.client_action id=client.id, action=arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
+            'legacyurl14'=>array('{% url regressiontests.templates.views.client_action client.id, arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
+            'legacyurl16'=>array('{% url regressiontests.templates.views.client_action action="update",id="1" %}', array(), '/url_tag/client/1/update/'),
+            'legacyurl16a'=>array("{% url regressiontests.templates.views.client_action action='update',id='1' %}", array(), '/url_tag/client/1/update/'),
+            'legacyurl17'=>array('{% url regressiontests.templates.views.client_action client_id=client.my_id,action=action %}', array('client'=>array('my_id'=>1), 'action'=>'update'), '/url_tag/client/1/update/'),
+
+            'old-url01'=>array('{% url regressiontests.templates.views.client client.id %}', array('client'=>array('id'=>1)), '/url_tag/client/1/'),
+            'old-url02'=>array('{% url regressiontests.templates.views.client_action id=client.id action="update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'old-url02a'=>array('{% url regressiontests.templates.views.client_action client.id "update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'old-url02b'=>array("{% url regressiontests.templates.views.client_action id=client.id action='update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'old-url02c'=>array("{% url regressiontests.templates.views.client_action client.id 'update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'old-url03'=>array('{% url regressiontests.templates.views.index %}', array(), '/url_tag/'),
+            'old-url04'=>array('{% url named.client client.id %}', array('client'=>array('id'=>1)), '/url_tag/named-client/1/'),
+            'old-url05'=>array('{% url метка_оператора v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'old-url06'=>array('{% url метка_оператора_2 tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            // TODO 'old-url07'=>array('{% url regressiontests.templates.views.client2 tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'old-url08'=>array('{% url метка_оператора v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'old-url09'=>array('{% url метка_оператора_2 tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'old-url10'=>array('{% url regressiontests.templates.views.client_action id=client.id action="two words" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/two%20words/'),
+            'old-url11'=>array('{% url regressiontests.templates.views.client_action id=client.id action="==" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/==/'),
+            'old-url12'=>array('{% url regressiontests.templates.views.client_action id=client.id action="," %}', array('client'=>array('id'=>1)), '/url_tag/client/1/,/'),
+            'old-url13'=>array('{% url regressiontests.templates.views.client_action id=client.id action=arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
+            'old-url14'=>array('{% url regressiontests.templates.views.client_action client.id arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
+            'old-url15'=>array('{% url regressiontests.templates.views.client_action 12 "test" %}', array(), '/url_tag/client/12/test/'),
+            'old-url16'=>array('{% url regressiontests.templates.views.client "1,2" %}', array(), '/url_tag/client/1,2/'),
+
+            // Failures
+            'old-url-fail01'=>array('{% url %}', array(), 'TemplateSyntaxError'),
+            'old-url-fail02'=>array('{% url no_such_view %}', array(), array('UrlNoReverseMatch', 'UrlNoReverseMatch')),
+            'old-url-fail03'=>array('{% url regressiontests.templates.views.client %}', array(), array('UrlNoReverseMatch', 'UrlNoReverseMatch')),
+            'old-url-fail04'=>array('{% url view id, %}', array(), 'TemplateSyntaxError'),
+            'old-url-fail05'=>array('{% url view id= %}', array(), 'TemplateSyntaxError'),
+            'old-url-fail06'=>array('{% url view a.id=id %}', array(), 'TemplateSyntaxError'),
+            'old-url-fail07'=>array('{% url view a.id!id %}', array(), 'TemplateSyntaxError'),
+            'old-url-fail08'=>array('{% url view id="unterminatedstring %}', array(), 'TemplateSyntaxError'),
+            'old-url-fail09'=>array('{% url view id=", %}', array(), 'TemplateSyntaxError'),
+
+            // {% url ... as var %}
+            'old-url-asvar01'=>array('{% url regressiontests.templates.views.index as url %}', array(), ''),
+            'old-url-asvar02'=>array('{% url regressiontests.templates.views.index as url %}{{ url }}', array(), '/url_tag/'),
+            'old-url-asvar03'=>array('{% url no_such_view as url %}{{ url }}', array(), ''),
+
+            // forward compatibility
+            // Successes
+            'url01'=>array('{% load url from future %}{% url "regressiontests.templates.views.client" client.id %}', array('client'=>array('id'=>1)), '/url_tag/client/1/'),
+            'url02'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" id=client.id action="update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'url02a'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" client.id "update" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'url02b'=>array("{% load url from future %}{% url 'regressiontests.templates.views.client_action' id=client.id action='update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'url02c'=>array("{% load url from future %}{% url 'regressiontests.templates.views.client_action' client.id 'update' %}", array('client'=>array('id'=>1)), '/url_tag/client/1/update/'),
+            'url03'=>array('{% load url from future %}{% url "regressiontests.templates.views.index" %}', array(), '/url_tag/'),
+            'url04'=>array('{% load url from future %}{% url "named.client" client.id %}', array('client'=>array('id'=>1)), '/url_tag/named-client/1/'),
+            'url05'=>array('{% load url from future %}{% url "метка_оператора" v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'url06'=>array('{% load url from future %}{% url "метка_оператора_2" tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            // TODO 'url07'=>array('{% load url from future %}{% url "regressiontests.templates.views.client2" tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'url08'=>array('{% load url from future %}{% url "метка_оператора" v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'url09'=>array('{% load url from future %}{% url "метка_оператора_2" tag=v %}', array('v'=>'Ω'), '/url_tag/%D0%AE%D0%BD%D0%B8%D0%BA%D0%BE%D0%B4/%CE%A9/'),
+            'url10'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" id=client.id action="two words" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/two%20words/'),
+            'url11'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" id=client.id action="==" %}', array('client'=>array('id'=>1)), '/url_tag/client/1/==/'),
+            'url12'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" id=client.id action="," %}', array('client'=>array('id'=>1)), '/url_tag/client/1/,/'),
+            'url13'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" id=client.id action=arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
+            'url14'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" client.id arg|join:"-" %}', array('client'=>array('id'=>1), 'arg'=>array('a','b')), '/url_tag/client/1/a-b/'),
+            'url15'=>array('{% load url from future %}{% url "regressiontests.templates.views.client_action" 12 "test" %}', array(), '/url_tag/client/12/test/'),
+            'url18'=>array('{% load url from future %}{% url "regressiontests.templates.views.client" "1,2" %}', array(), '/url_tag/client/1,2/'),
+
+            'url19'=>array('{% load url from future %}{% url named_url client.id %}', array('named_url'=>'regressiontests.templates.views.client', 'client'=>array('id'=>1)), '/url_tag/client/1/'),
+            'url20'=>array('{% load url from future %}{% url url_name_in_var client.id %}', array('url_name_in_var'=>'named.client', 'client'=>array('id'=>1)), '/url_tag/named-client/1/'),
+
+            // Failures
+            'url-fail01'=>array('{% load url from future %}{% url %}', array(), 'TemplateSyntaxError'),
+            'url-fail02'=>array('{% load url from future %}{% url "no_such_view" %}', array(), array('UrlNoReverseMatch', 'UrlNoReverseMatch')),
+            'url-fail03'=>array('{% load url from future %}{% url "regressiontests.templates.views.client" %}', array(), array('UrlNoReverseMatch', 'UrlNoReverseMatch')),
+            'url-fail04'=>array('{% load url from future %}{% url "view" id, %}', array(), 'TemplateSyntaxError'),
+            'url-fail05'=>array('{% load url from future %}{% url "view" id= %}', array(), 'TemplateSyntaxError'),
+            'url-fail06'=>array('{% load url from future %}{% url "view" a.id=id %}', array(), 'TemplateSyntaxError'),
+            'url-fail07'=>array('{% load url from future %}{% url "view" a.id!id %}', array(), 'TemplateSyntaxError'),
+            'url-fail08'=>array('{% load url from future %}{% url "view" id="unterminatedstring %}', array(), 'TemplateSyntaxError'),
+            'url-fail09'=>array('{% load url from future %}{% url "view" id=", %}', array(), 'TemplateSyntaxError'),
+
+            'url-fail11'=>array('{% load url from future %}{% url named_url %}', array(), array('UrlNoReverseMatch', 'UrlNoReverseMatch')),
+            'url-fail12'=>array('{% load url from future %}{% url named_url %}', array('named_url'=>'no_such_view'), array('UrlNoReverseMatch', 'UrlNoReverseMatch')),
+            'url-fail13'=>array('{% load url from future %}{% url named_url %}', array('named_url'=>'regressiontests.templates.views.client'), array('UrlNoReverseMatch', 'UrlNoReverseMatch')),
+            'url-fail14'=>array('{% load url from future %}{% url named_url id, %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
+            'url-fail15'=>array('{% load url from future %}{% url named_url id= %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
+            'url-fail16'=>array('{% load url from future %}{% url named_url a.id=id %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
+            'url-fail17'=>array('{% load url from future %}{% url named_url a.id!id %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
+            'url-fail18'=>array('{% load url from future %}{% url named_url id="unterminatedstring %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
+            'url-fail19'=>array('{% load url from future %}{% url named_url id=", %}', array('named_url'=>'view'), 'TemplateSyntaxError'),
+
+            // {% url ... as var %}
+            'url-asvar01'=>array('{% load url from future %}{% url "regressiontests.templates.views.index" as url %}', array(), ''),
+            'url-asvar02'=>array('{% load url from future %}{% url "regressiontests.templates.views.index" as url %}{{ url }}', array(), '/url_tag/'),
+            'url-asvar03'=>array('{% load url from future %}{% url "no_such_view" as url %}{{ url }}', array(), ''),
 
             
             // ### CACHE TAG ######################################################
