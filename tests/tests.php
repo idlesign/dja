@@ -10,7 +10,7 @@ import_module('loaders/filesystem');
 import_module('loaders/app_directories');
 
 // Set url no test dja's generic url manager.
-Dja::setUrlManager(new DjaUrlDispatcher(
+Dja::setUrlDispatcher(new DjaUrlDispatcher(
     array(
         '~^/url_tag/client/(?P<id>\d+)/(?P<action>[^/]+)/$~' => 'regressiontests.templates.views.client_action',
         '~^/url_tag/client/(?P<client_id>\d+)/(?P<action>[^/]+)/$~' => 'regressiontests.templates.views.client_action',

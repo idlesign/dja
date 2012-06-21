@@ -653,7 +653,7 @@ class URLNode extends Node {
          */
         $url = '';
         try {
-            $url_manager = Dja::getUrlManager();
+            $url_manager = Dja::getUrlDispatcher();
             $url = $url_manager->reverse($view_name, null, $args, $kwargs, null, $context->current_app);
         } catch (UrlNoReverseMatch $e) {
             if ($this->asvar === null) {

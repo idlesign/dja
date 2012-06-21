@@ -64,7 +64,7 @@ class Dja {
     /**
      * @var null|IDjaUrlDispatcher
      */
-    private static $_url_manager = null;
+    private static $_url_dispatcher = null;
 
     /**
      * Sets Dja settings values.
@@ -136,31 +136,31 @@ class Dja {
     }
 
     /**
-     * Returns URL Manager object used by Dja to reverse URLs.
+     * Returns URL Dispatcher object used by Dja to reverse URLs.
      *
      * @static
      * @return IDjaUrlDispatcher|null
      */
-    public static function getUrlManager() {
-        if (self::$_url_manager === null) {
-            self::$_url_manager = new DjaUrlDispatcher();
+    public static function getUrlDispatcher() {
+        if (self::$_url_dispatcher === null) {
+            self::$_url_dispatcher = new DjaUrlDispatcher();
         }
-        return self::$_url_manager;
+        return self::$_url_dispatcher;
     }
 
     /**
-     * Sets URL Manager object used by Dja to reverse URLs.
-     * Such an object is required to implement IDjaUrlManager interface.
+     * Sets URL Dispatcher object used by Dja to reverse URLs.
+     * Such an object is required to implement IDjaUrlDispatcher interface.
      *
      * @static
      * @param IDjaUrlDispatcher $obj
      * @throws DjaException
      */
-    public static function setUrlManager($obj) {
+    public static function setUrlDispatcher($obj) {
         if (!($obj instanceof IDjaUrlDispatcher)){
             throw new DjaException('Unable to use object not implementing IDjaUrlManager as URL Manager.');
         }
-        self::$_url_manager = $obj;
+        self::$_url_dispatcher = $obj;
     }
 
     public static function getCache($key) {
