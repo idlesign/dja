@@ -576,7 +576,7 @@ class Library {
      * @param Closure $filter_func
      * @param array $flags
      *
-     * @return DjaClosure
+     * @return DjaFilterClosure
      */
     public function filter($name, $filter_func, array $flags = array()) {
         $filter_func = new DjaFilterClosure($name, $filter_func);
@@ -695,7 +695,7 @@ class Template implements Iterator {
      *
      * @param Context $context
      *
-     * @return SafeString
+     * @return string
      * @throws Exception
      */
     public function render($context) {
@@ -1115,7 +1115,7 @@ class Parser {
     /**
      * @param string $filter_name
      *
-     * @return DjaClosure
+     * @return DjaFilterClosure
      * @throws TemplateSyntaxError
      */
     public function findFilter($filter_name) {
@@ -1404,7 +1404,7 @@ class TextNode extends Node {
     /**
      * @param Context $context
      *
-     * @return string
+     * @return SafeString|string
      */
     public function render($context) {
         return $this->s;
@@ -1464,6 +1464,7 @@ class Variable {
 
     /**
      * @param string $var
+     * @throws TemplateSyntaxError
      */
     public function __construct($var) {
         $this->var = $var;
@@ -1639,6 +1640,7 @@ class FilterExpression {
      *
      * @param Token $token
      * @param Parser $parser
+     * @throws TemplateSyntaxError
      */
     public function __construct($token, $parser) {
         $this->token = $token;

@@ -86,7 +86,7 @@ class BaseContext implements ArrayAccess {
         $dicts = $this->dicts;
         krsort($dicts);
         foreach ($dicts as $d) {
-            if (isset($d[$key]) || key_exists($key, $d)) {
+            if (isset($d[$key]) || array_key_exists($key, $d)) {
                 return $d[$key];
             }
         }
@@ -162,9 +162,10 @@ class Context extends BaseContext {
     /**
      * Pushes other_dict to the stack of dictionaries in the Context
      *
-     * @param $other_dict
+     * @param array $other_dict
      *
      * @return mixed
+     * @throws TypeError
      */
     public function update($other_dict) {
         if (!is_array($other_dict)) {
