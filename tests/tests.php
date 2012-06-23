@@ -414,7 +414,7 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
 
         // Warm the URL reversing cache. This ensures we don't pay the cost
         // warming the cache during one of the tests.
-        // TODO Dja::url_reverse('regressiontests.templates.views.client_action', null, array('id'=>0,'action'=>"update"));
+        Dja::getUrlDispatcher()->reverse('regressiontests.templates.views.client_action', null, array(), array('id'=>0,'action'=>"update"));
 
         foreach ($tests as $name=>$vals) {
             if (is_array($vals[2])) {
@@ -438,7 +438,7 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
                 $template_debug_result = $vals[2];
             }
 
-            if (key_exists('LANGUAGE_CODE', $vals[1])) {
+            if (array_key_exists('LANGUAGE_CODE', $vals[1])) {
                 activate($vals[1]['LANGUAGE_CODE']);
             } else {
                 activate('en-us');

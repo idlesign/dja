@@ -56,14 +56,14 @@ interface IDjaUrlDispatcher {
      * @abstract
      * @param string $viewname  View alias (corresponds to view name or path in Django).
      * @param null $urlconf
-     * @param null|array $args  Positional arguments.
-     * @param null|array $kwargs  Keyword arguments.
+     * @param array $args  Positional arguments.
+     * @param array $kwargs  Keyword arguments.
      * @param null $prefix
      * @param null $current_app
      * @return string
      * @throws UrlNoReverseMatch
      */
-    public function reverse($viewname, $urlconf=null, $args=null, $kwargs=null, $prefix=null, $current_app=null);
+    public function reverse($viewname, $urlconf=null, array $args=array(), array $kwargs=array(), $prefix=null, $current_app=null);
 }
 
 
@@ -127,7 +127,7 @@ class DjaUrlDispatcher implements IDjaUrlDispatcher {
         return $populated;
     }
 
-    public function reverse($viewname, $urlconf=null, $args=null, $kwargs=null, $prefix=null, $current_app=null) {
+    public function reverse($viewname, $urlconf=null, array $args=array(), array $kwargs=array(), $prefix=null, $current_app=null) {
         $indexes = array_keys($this->_rules, $viewname);
         $re_params = '~(?P<ngroup>\((\?P<(?P<name>[^>]+)>)?[^)]+\))~';
         foreach ($indexes as $url_pattern) {
