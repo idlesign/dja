@@ -67,6 +67,50 @@ interface IDjaUrlDispatcher {
 }
 
 
+interface IDjaI18n {
+
+    /**
+     * Activates the translation defined by language identifier
+     * and sets it as the current translation.
+     *
+     * @abstract
+     * @param string $lang
+     * @return void
+     */
+    function activate($lang);
+
+    /**
+     * Deactivates current translation.
+     *
+     * @abstract
+     * @return void
+     */
+    function deactivate();
+
+    /**
+     * Returns the localized translation of message,
+     * based on the current locale.
+     *
+     * @abstract
+     * @param string $message
+     * @return string
+     */
+    function ugettext($message);
+
+    /**
+     * Returns the localized translation of message with given context
+     * hint, based on the current locale.
+     *
+     * @abstract
+     * @param string $context
+     * @param string $message
+     * @return string
+     */
+    function pgettext($context, $message);
+
+}
+
+
 /**
  * Default Dja URL Dispatcher.
  */
@@ -162,6 +206,32 @@ class DjaUrlDispatcher implements IDjaUrlDispatcher {
 
 
 /**
+ * Default Dja localization interface.
+ */
+class DjaI18n implements IDjaI18n {
+
+    // TODO Implement some generic logic.
+
+    function activate($lang) {
+        return True;
+    }
+
+    function deactivate() {
+        return True;
+    }
+
+    function ugettext($message) {
+        return $message;
+    }
+
+    function pgettext($context, $message) {
+        return $message;
+    }
+
+}
+
+
+/**
  * Returns filter closure from previously imported Library module
  * by filter name.
  *
@@ -220,41 +290,6 @@ class SafeString extends SafeData {
         return (string)$this->_obj;
     }
 
-}
-
-
-function activate($lang) {
-    // TODO Implement generic language switching interface.
-    return True;
-}
-
-function deactivate() {
-    // TODO Implement generic language switching interface.
-    return True;
-}
-
-
-function ugettext($message) {
-    // TODO Implement generic translation interface.
-    return $message;
-}
-
-
-function ugettext_lazy($message) {
-    // TODO Implement generic translation interface.
-    return ugettext($message);
-}
-
-
-function pgettext($context, $message) {
-    // TODO Implement generic translation interface.
-    return $message;
-}
-
-
-function pgettext_lazy($context, $message) {
-    // TODO Implement generic translation interface.
-    return pgettext($context, $message);
 }
 
 
@@ -645,7 +680,7 @@ class Truncator { //(SimpleLazyObject):
 
     public static function add_truncation_text($text, $truncate = null) {
         if ($truncate === null) {
-            $truncate = pgettext('String to return when truncating text', '%(truncated_text)s...');
+            $truncate = Dja::getI18n()->pgettext('String to return when truncating text', '%(truncated_text)s...');
         }
 
         if (strpos($truncate, '%(truncated_text)s') !== False) {

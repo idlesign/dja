@@ -594,7 +594,7 @@ $lib->filter('divisibleby', function($value, $arg) {
 
 $lib->filter('yesno', function($value, $arg = null) {
     if ($arg === null) {
-        $arg = ugettext('yes,no,maybe');
+        $arg = Dja::getI18n()->ugettext('yes,no,maybe');
     }
     $bits = explode(',', $arg);
     if (count($bits) < 2) {

@@ -65,6 +65,10 @@ class Dja {
      * @var null|IDjaUrlDispatcher
      */
     private static $_url_dispatcher = null;
+    /**
+     * @var null|IDjaI18n
+     */
+    private static $_i18n = null;
 
     /**
      * Sets Dja settings values.
@@ -133,6 +137,34 @@ class Dja {
      */
     public static function getVersion() {
         return DJA_VERSION;
+    }
+
+    /**
+     * Returns localization object implementing internationalization functions.
+     *
+     * @static
+     * @return IDjaI18n|null
+     */
+    public static function getI18n() {
+        if (self::$_i18n === null) {
+            self::$_i18n = new DjaI18n();
+        }
+        return self::$_i18n;
+    }
+
+    /**
+     * Sets localization object implementing internationalization functions.
+     * Such an object is required to implement IDjaI18n interface.
+     *
+     * @static
+     * @param $obj
+     * @throws DjaException
+     */
+    public static function setI18n($obj) {
+        if (!($obj instanceof IDjaI18n)){
+            throw new DjaException('Unable to use object not implementing IDjaI18n as internationalization interface.');
+        }
+        self::$_i18n = $obj;
     }
 
     /**

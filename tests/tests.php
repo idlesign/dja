@@ -439,9 +439,9 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
             }
 
             if (array_key_exists('LANGUAGE_CODE', $vals[1])) {
-                activate($vals[1]['LANGUAGE_CODE']);
+                Dja::getI18n()->activate($vals[1]['LANGUAGE_CODE']);
             } else {
-                activate('en-us');
+                Dja::getI18n()->activate('en-us');
             }
 
             foreach (array(
@@ -488,7 +488,7 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
                 $cache_loader->reset();
             }
             if (array_key_exists('LANGUAGE_CODE', $vals[1])) {
-                deactivate();
+                Dja::getI18n()->deactivate();
             }
             if (DjaBase::$invalid_var_format_string) {
                 $expected_invalid_str = 'INVALID';
@@ -498,7 +498,7 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
         }
 
         restore_template_loaders();
-        deactivate();
+        Dja::getI18n()->deactivate();
         Dja::setSetting('TEMPLATE_STRING_IF_INVALID', $old_invalid);
         Dja::setSetting('TEMPLATE_DEBUG', $old_debug);
         Dja::setSetting('ALLOWED_INCLUDE_ROOTS', $old_allowed_include_roots);

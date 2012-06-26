@@ -1531,9 +1531,9 @@ class Variable {
         }
         if ($this->translate) {
             if ($this->message_context) {
-                return pgettext_lazy($this->message_context, $value);
+                return Dja::getI18n()->pgettext($this->message_context, $value);
             } else {
-                return ugettext_lazy($value);
+                return Dja::getI18n()->ugettext($value);
             }
         }
         return $value;
