@@ -9,7 +9,7 @@ require_once 'filters.php';
 import_module('loaders/filesystem');
 import_module('loaders/app_directories');
 
-// Set url no test dja's generic url manager.
+// Set test URLs for Dja's generic URL dispatcher.
 Dja::setUrlDispatcher(new DjaUrlDispatcher(
     array(
         '~^/url_tag/client/(?P<id>\d+)/(?P<action>[^/]+)/$~' => 'regressiontests.templates.views.client_action',
@@ -20,6 +20,24 @@ Dja::setUrlDispatcher(new DjaUrlDispatcher(
         '~^/url_tag/Юникод/(\w+)/$~' => 'метка_оператора',
         '~^/url_tag/Юникод/(?P<tag>\S+)/$~' => 'метка_оператора_2',
         //'~^/url_tag/Юникод/(?P<tag>\S+)/$~' => 'regressiontests.templates.views.client2',
+    )
+));
+
+// Set test internationalization rules for Dja's generic I18n class.
+Dja::setI18n(new DjaI18n(
+    array(
+        'de'=>'German',
+        'ru'=>'Russian'
+    ),
+    array(
+        'de'=>array(
+            'Page not found' =>'Seite nicht gefunden',
+            'Password'=>'Passwort',
+            'yes,no,maybe'=>'Ja,Nein,Vielleicht'
+        ),
+        'ru'=>array(
+            '%(counter)s result'=>'%(counter)s результат'
+        ),
     )
 ));
 
@@ -438,7 +456,7 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
                 $template_debug_result = $vals[2];
             }
 
-            if (array_key_exists('LANGUAGE_CODE', $vals[1])) {
+            if (isset($vals[1]['LANGUAGE_CODE'])) {
                 Dja::getI18n()->activate($vals[1]['LANGUAGE_CODE']);
             } else {
                 Dja::getI18n()->activate('en-us');
@@ -482,12 +500,12 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
                     }
 
                     if ($output!=$result) {
-                        $failures[] = $fail_str_ . 'Expected ||' . $result . '||, got ||' . $output . '||';
+                        $failures[] = $fail_str_ . 'Expected [' . $result . '], got [' . $output . ']';
                     }
                 }
                 $cache_loader->reset();
             }
-            if (array_key_exists('LANGUAGE_CODE', $vals[1])) {
+            if (isset($vals[1]['LANGUAGE_CODE'])) {
                 Dja::getI18n()->deactivate();
             }
             if (DjaBase::$invalid_var_format_string) {
@@ -1173,7 +1191,90 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
             'spaceless05'=>array("{% autoescape off %}{% spaceless %}<b>   <i>{{ text }}</i>  </b>{% endspaceless %}{% endautoescape %}", array('text'=>'This & that'), "<b><i>This & that</i></b>"),
             'spaceless06'=>array("{% spaceless %}<b>   <i>{{ text|safe }}</i>  </b>{% endspaceless %}", array('text'=>'This & that'), "<b><i>This & that</i></b>"),
 
-            // ------------------------------------------ I18N
+            // ### I18N ##################################################################
+
+            // simple translation of a string delimited by '
+            'i18n01'=>array("{% load i18n %}{% trans 'xxxyyyxxx' %}", array(), "xxxyyyxxx"),
+
+            // simple translation of a string delimited by "
+            'i18n02'=>array('{% load i18n %}{% trans "xxxyyyxxx" %}', array(), "xxxyyyxxx"),
+
+            // simple translation of a variable
+            'i18n03'=>array('{% load i18n %}{% blocktrans %}{{ anton }}{% endblocktrans %}', array('anton'=>'Å'), "Å"),  // this one changed for dja
+
+            // simple translation of a variable and filter
+            'i18n04'=>array('{% load i18n %}{% blocktrans with berta=anton|lower %}{{ berta }}{% endblocktrans %}', array('anton'=>'å'), 'å'),  // this one changed for dja
+            'legacyi18n04'=>array('{% load i18n %}{% blocktrans with anton|lower as berta %}{{ berta }}{% endblocktrans %}', array('anton'=>'å'), 'å'),  // this one changed for dja
+
+            // simple translation of a string with interpolation
+            'i18n05'=>array('{% load i18n %}{% blocktrans %}xxx{{ anton }}xxx{% endblocktrans %}', array('anton'=>'yyy'), "xxxyyyxxx"),
+
+            // simple translation of a string to german
+            'i18n06'=>array('{% load i18n %}{% trans "Page not found" %}', array('LANGUAGE_CODE'=>'de'), "Seite nicht gefunden"),
+
+            // translation of singular form
+            'i18n07'=>array('{% load i18n %}{% blocktrans count counter=number %}singular{% plural %}{{ counter }} plural{% endblocktrans %}', array('number'=>1), "singular"),
+            'legacyi18n07'=>array('{% load i18n %}{% blocktrans count number as counter %}singular{% plural %}{{ counter }} plural{% endblocktrans %}', array('number'=>1), "singular"),
+
+            // translation of plural form
+            'i18n08'=>array('{% load i18n %}{% blocktrans count number as counter %}singular{% plural %}{{ counter }} plural{% endblocktrans %}', array('number'=>2), "2 plural"),
+            'legacyi18n08'=>array('{% load i18n %}{% blocktrans count counter=number %}singular{% plural %}{{ counter }} plural{% endblocktrans %}', array('number'=>2), "2 plural"),
+
+            // simple non-translation (only marking) of a string to german
+            'i18n09'=>array('{% load i18n %}{% trans "Page not found" noop %}', array('LANGUAGE_CODE'=>'de'), "Page not found"),
+
+            // translation of a variable with a translated filter
+            'i18n10'=>array('{{ bool|yesno:_("yes,no,maybe") }}', array('bool'=>True, 'LANGUAGE_CODE'=>'de'), 'Ja'),
+
+            // translation of a variable with a non-translated filter
+            'i18n11'=>array('{{ bool|yesno:"ja,nein" }}', array('bool'=>True), 'ja'),
+
+            // usage of the get_available_languages tag
+            'i18n12'=>array('{% load i18n %}{% get_available_languages as langs %}{% for lang in langs %}{% ifequal lang.0 "de" %}{{ lang.0 }}{% endifequal %}{% endfor %}', array(), 'de'),
+
+            // translation of constant strings
+            'i18n13'=>array('{{ _("Password") }}', array('LANGUAGE_CODE'=>'de'), 'Passwort'),
+            'i18n14'=>array('{% cycle "foo" _("Password") _(\'Password\') as c %} {% cycle c %} {% cycle c %}', array('LANGUAGE_CODE'=>'de'), 'foo Passwort Passwort'),
+            'i18n15'=>array('{{ absent|default:_("Password") }}', array('LANGUAGE_CODE'=>'de', 'absent'=>""), 'Passwort'),
+            'i18n16'=>array('{{ _("<") }}', array('LANGUAGE_CODE'=>'de'), '<'),
+
+            // Escaping inside blocktrans and trans works as if it was directly in the template.
+            'i18n17'=>array('{% load i18n %}{% blocktrans with berta=anton|escape %}{{ berta }}{% endblocktrans %}', array('anton'=>'α & β'), 'α &amp; β'),
+            'i18n18'=>array('{% load i18n %}{% blocktrans with berta=anton|force_escape %}{{ berta }}{% endblocktrans %}', array('anton'=>'α & β'), 'α &amp; β'),
+            'i18n19'=>array('{% load i18n %}{% blocktrans %}{{ andrew }}{% endblocktrans %}', array('andrew'=>'a & b'), 'a &amp; b'),
+            'i18n20'=>array('{% load i18n %}{% trans andrew %}', array('andrew'=>'a & b'), 'a &amp; b'),
+            'i18n21'=>array('{% load i18n %}{% blocktrans %}{{ andrew }}{% endblocktrans %}', array('andrew'=>mark_safe('a & b')), 'a & b'),
+            'i18n22'=>array('{% load i18n %}{% trans andrew %}', array('andrew'=>mark_safe('a & b')), 'a & b'),
+            'legacyi18n17'=>array('{% load i18n %}{% blocktrans with anton|escape as berta %}{{ berta }}{% endblocktrans %}', array('anton'=>'α & β'), 'α &amp; β'),
+            'legacyi18n18'=>array('{% load i18n %}{% blocktrans with anton|force_escape as berta %}{{ berta }}{% endblocktrans %}', array('anton'=>'α & β'), 'α &amp; β'),
+
+            // Use filters with the {% trans %} tag, #5972
+            'i18n23'=>array('{% load i18n %}{% trans "Page not found"|capfirst|slice:"6:" %}', array('LANGUAGE_CODE'=>'de'), 'nicht gefunden'),
+            'i18n24'=>array("{% load i18n %}{% trans 'Page not found'|upper %}", array('LANGUAGE_CODE'=>'de'), 'SEITE NICHT GEFUNDEN'),
+            'i18n25'=>array('{% load i18n %}{% trans somevar|upper %}', array('somevar'=>'Page not found', 'LANGUAGE_CODE'=>'de'), 'SEITE NICHT GEFUNDEN'),
+
+            // translation of plural form with extra field in singular form (#13568)
+            'i18n26'=>array('{% load i18n %}{% blocktrans with extra_field=myextra_field count counter=number %}singular {{ extra_field }}{% plural %}plural{% endblocktrans %}', array('number'=>1, 'myextra_field'=>'test'), "singular test"),
+            'legacyi18n26'=>array('{% load i18n %}{% blocktrans with myextra_field as extra_field count number as counter %}singular {{ extra_field }}{% plural %}plural{% endblocktrans %}', array('number'=>1, 'myextra_field'=>'test'), "singular test"),
+
+            // translation of singular form in russian (#14126)
+            'i18n27'=>array('{% load i18n %}{% blocktrans count counter=number %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}', array('number'=>1, 'LANGUAGE_CODE'=>'ru'), '1 результат'),  // this one changed for dja
+            'legacyi18n27'=>array('{% load i18n %}{% blocktrans count number as counter %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktrans %}', array('number'=>1, 'LANGUAGE_CODE'=>'ru'), '1 результат'),  // this one changed for dja
+
+            // simple translation of multiple variables
+            'i18n28'=>array('{% load i18n %}{% blocktrans with a=anton b=berta %}{{ a }} + {{ b }}{% endblocktrans %}', array('anton'=>'α', 'berta'=>'β'), 'α + β'),
+            'legacyi18n28'=>array('{% load i18n %}{% blocktrans with anton as a and berta as b %}{{ a }} + {{ b }}{% endblocktrans %}', array('anton'=>'α', 'berta'=>'β'), 'α + β'),
+
+            // retrieving language information  -- cut from dja
+
+            // blocktrans handling of variables which are not in the context.
+            'i18n34'=>array('{% load i18n %}{% blocktrans %}{{ missing }}{% endblocktrans %}', array(), ''),
+
+            // trans tag with as var
+            'i18n35'=>array('{% load i18n %}{% trans "Page not found" as page_not_found %}{{ page_not_found }}', array('LANGUAGE_CODE'=>'de'), "Seite nicht gefunden"),
+            'i18n36'=>array('{% load i18n %}{% trans "Page not found" noop as page_not_found %}{{ page_not_found }}', array('LANGUAGE_CODE'=>'de'), "Page not found"),
+            'i18n36'=>array('{% load i18n %}{% trans "Page not found" as page_not_found noop %}{{ page_not_found }}', array('LANGUAGE_CODE'=>'de'), "Page not found"),
+            'i18n37'=>array('{% load i18n %}{% trans "Page not found" as page_not_found %}{% blocktrans %}Error: {{ page_not_found }}{% endblocktrans %}', array('LANGUAGE_CODE'=>'de'), "Error: Seite nicht gefunden"),
 
             // ### HANDLING OF TEMPLATE_STRING_IF_INVALID ###################################
 
