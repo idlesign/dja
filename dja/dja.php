@@ -140,7 +140,7 @@ class Dja {
     }
 
     /**
-     * Returns localization object implementing internationalization functions.
+     * Returns object implementing internationalization functions.
      *
      * @static
      * @return IDjaI18n|null
@@ -153,7 +153,7 @@ class Dja {
     }
 
     /**
-     * Sets localization object implementing internationalization functions.
+     * Sets object implementing internationalization functions.
      * Such an object is required to implement IDjaI18n interface.
      *
      * @static

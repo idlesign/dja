@@ -44,7 +44,7 @@ class DjaFilterClosure {
 
 
 /**
- * Interface for custom Dja URL Dispatcher class to implement.
+ * Interface for a custom URL Dispatcher to implement.
  */
 interface IDjaUrlDispatcher {
     /**
@@ -67,6 +67,9 @@ interface IDjaUrlDispatcher {
 }
 
 
+/**
+ * Interface for a custom Internationalization to implement.
+ */
 interface IDjaI18n {
 
     /**
@@ -77,7 +80,7 @@ interface IDjaI18n {
      * @param string $lang
      * @return void
      */
-    function activate($lang);
+    public function activate($lang);
 
     /**
      * Deactivates current translation.
@@ -85,20 +88,37 @@ interface IDjaI18n {
      * @abstract
      * @return void
      */
-    function deactivate();
+    public function deactivate();
 
     /**
-     * Returns the localized translation of message,
+     * Returns current application language.
+     *
+     * @abstract
+     * @return string|null
+     */
+    public function getLanguage();
+
+    /**
+     * Returns an array of available languages, where
+     * keys - languages codes; values - languages names.
+     *
+     * @abstract
+     * @return array
+     */
+    public function getLanguages();
+
+    /**
+     * Returns the localized translation of a message,
      * based on the current locale.
      *
      * @abstract
      * @param string $message
      * @return string
      */
-    function ugettext($message);
+    public function ugettext($message);
 
     /**
-     * Returns the localized translation of message with given context
+     * Returns the localized translation of a message with given context
      * hint, based on the current locale.
      *
      * @abstract
@@ -106,7 +126,32 @@ interface IDjaI18n {
      * @param string $message
      * @return string
      */
-    function pgettext($context, $message);
+    public function pgettext($context, $message);
+
+    /**
+     * Returns number-aware localized translation of a message,
+     * based on the current locale.
+     *
+     * @abstract
+     * @param string $singular
+     * @param string $plural
+     * @param int $count
+     * @return string
+     */
+    public function ungettext($singular, $plural, $count);
+
+    /**
+     * Returns number-aware localized translation of a message with given context
+     * hint, based on the current locale.
+     *
+     * @abstract
+     * @param string $context
+     * @param string $singular
+     * @param string $plural
+     * @param int $count
+     * @return string
+     */
+    public function npgettext($context, $singular, $plural, $count);
 
 }
 
@@ -206,26 +251,65 @@ class DjaUrlDispatcher implements IDjaUrlDispatcher {
 
 
 /**
- * Default Dja localization interface.
+ * Default Dja internationalization class.
  */
 class DjaI18n implements IDjaI18n {
 
-    // TODO Implement some generic logic.
+    private $_lang = null;
+    private $_langs = array();
+    private $_messages = array();
 
-    function activate($lang) {
-        return True;
+    public function __construct(array $langs=null, array $messages=null) {
+        if ($langs!==null) {
+            $this->setLanguages($langs);
+        }
+        if ($messages!==null) {
+            $this->setMessages($messages);
+        }
     }
 
-    function deactivate() {
-        return True;
+    public function setLanguages(array $langs) {
+        $this->_langs = $langs;
     }
 
-    function ugettext($message) {
+    public function setMessages(array $messages) {
+        $this->_messages = $messages;
+    }
+
+    public function activate($lang) {
+        $this->_lang = $lang;
+    }
+
+    public function deactivate() {
+        $this->_lang = null;
+    }
+
+    public function getLanguage() {
+        return $this->_lang;
+    }
+
+    public function getLanguages() {
+        return $this->_langs;
+    }
+
+    public function ugettext($message) {
+        $msg_str = (string)$message;
+        if (isset($this->_messages[$this->_lang][$msg_str])) {
+            return $this->_messages[$this->_lang][$msg_str];
+        }
         return $message;
     }
 
-    function pgettext($context, $message) {
-        return $message;
+    public function ungettext($singular, $plural, $count) {
+        return $count==1 ? $this->ugettext($singular) : $this->ugettext($plural);
+    }
+
+    public function pgettext($context, $message) {
+        return $this->ugettext($message);
+    }
+
+    public function npgettext($context, $singular, $plural, $count) {
+        return $this->ungettext($singular, $plural, $count);
     }
 
 }
