@@ -624,7 +624,29 @@ $lib->filter('yesno', function($value, $arg = null) {
 // TODO filesizeformat
 
 
-// TODO pluralize
+$lib->filter('pluralize', function($value, $arg='s') {
+    if (strpos($arg, ',')==false) {
+        $arg = ',' . $arg;
+    }
+
+    $bits = explode(',', $arg);
+    if (count($bits)>2) {
+        return '';
+    }
+    list ($singular_suffix, $plural_suffix) = py_slice($bits, null, 2);
+
+    if (is_numeric($value)) {
+        if ($value!=1) {
+         return $plural_suffix;
+        }
+    } elseif (is_array($value)) {
+        if (count($value)!=1) {
+            return $plural_suffix;
+        }
+    }
+    return $singular_suffix;
+
+}, array('is_safe' => False));
 
 
 $lib->filter('phone2numeric', function($value) {

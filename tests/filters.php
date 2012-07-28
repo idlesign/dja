@@ -369,5 +369,20 @@ function get_filter_tests() {
          'add05'=>array('{{ l1|add:l2 }}', array('l1'=>array(1, 2), 'l2'=>array(3, 4)), '[1, 2, 3, 4]'),
          'add06'=>array('{{ t1|add:t2 }}', array('t1'=>array(3, 4), 't2'=>array(1, 2)), '[3, 4, 1, 2]'),  // Dja uses arrays, and doesn't know anything about sets.
          // TODO 'add07'=>array('{{ d|add:t }}', array('d'=>date(2000, 1, 1), 't'=>timedelta(10)), 'Jan. 11, 2000'),
+
+        // -----------------------------------------------------------------
+        // Tese below are not included in Django tests, but tailored for dja,
+        'filter-pluralize01'=>array('{{ value }} vote{{ value|pluralize }}', array("value"=>0), '0 votes'),
+        'filter-pluralize02'=>array('{{ value }} vote{{ value|pluralize }}', array("value"=>1), '1 vote'),
+        'filter-pluralize03'=>array('{{ value }} vote{{ value|pluralize }}', array("value"=>2), '2 votes'),
+
+        'filter-pluralize04'=>array('{{ value }} class{{ value|pluralize:"es" }}', array("value"=>0), '0 classes'),
+        'filter-pluralize05'=>array('{{ value }} class{{ value|pluralize:"es" }}', array("value"=>1), '1 class'),
+        'filter-pluralize06'=>array('{{ value }} class{{ value|pluralize:"es" }}', array("value"=>2), '2 classes'),
+
+        'filter-pluralize07'=>array('{{ value }} cand{{ value|pluralize:"y,ies" }}', array("value"=>0), '0 candies'),
+        'filter-pluralize08'=>array('{{ value }} cand{{ value|pluralize:"y,ies" }}', array("value"=>1), '1 candy'),
+        'filter-pluralize09'=>array('{{ value }} cand{{ value|pluralize:"y,ies" }}', array("value"=>2), '2 candies'),
+
     );
 }
