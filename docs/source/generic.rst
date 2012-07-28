@@ -55,3 +55,56 @@ Dja allows you to replace generic URL Dispatcher with a custom one.
 
 To do this one should construct a dispatching class which implements IDjaUrlDispatcher interface,
 and pass an object of that class into `Dja::setUrlDispatcher()` before template rendering.
+
+
+
+Generic Internationalization mechanism
+--------------------------------------
+
+To support internzationalization dja uses simple `DjaI18n` class.
+It allows, for example, `trans` template tag to localize messages.
+
+To access class object use `Dja::getI18n()` method.
+
+This built-in system uses primitive array storage approach to keep the translations.
+
+One can pass an array of messages indexed by language codes to `DjaI18n` using its `setMessages()` method.
+
+.. code-block:: php
+
+    <?php
+
+    $i18n = Dja::getI18n();
+    $i18n->setMessages(array(
+        'de'=>array(
+            'Page not found'=>'Seite nicht gefunden',
+        ),
+        'ru'=>array(
+            'Page not found'=>'Страница не найдена',
+        ),
+    ));
+
+
+To let `DjaI18n` know what languages are supported by your application, you should pass an array with
+languages definitions to `setLanguages` method:
+
+.. code-block:: php
+
+    <?php
+
+    $i18n = Dja::getI18n();
+    $i18n->setLanguages(array(
+        'de'=>'German',
+        'ru'=>'Russian'
+    ));
+
+Read more about in-template internationalization at https://docs.djangoproject.com/en/dev/topics/i18n/translation/#internationalization-in-template-code
+
+
+Custom Internationalization mechanism
+-------------------------------------
+
+Dja allows you to replace generic Internationalization mechanism with a custom one.
+
+To do this one should construct a class implementing IDjaI18n interface,
+and pass an object of that class into `Dja::setI18n()` before template rendering.
