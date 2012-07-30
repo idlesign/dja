@@ -44,6 +44,36 @@ class DjaFilterClosure {
 
 
 /**
+ * Interface for a custom Cache Manager to implement.
+ */
+interface IDjaCacheManager {
+
+    /**
+     * Returns cache entry by key.
+     *
+     * @abstract
+     * @param string $key
+     * @param null|mixed $default
+     * @param null|int $version
+     * @return mixed
+     */
+    public function get($key, $default=null, $version=null);
+
+    /**
+     * Sets cache entry.
+     *
+     * @abstract
+     * @param string $key
+     * @param mixed $value
+     * @param null|int $timeout
+     * @param null|int $version
+     */
+    public function set($key, $value, $timeout=null, $version=null);
+
+}
+
+
+/**
  * Interface for a custom URL Dispatcher to implement.
  */
 interface IDjaUrlDispatcher {
@@ -310,6 +340,133 @@ class DjaI18n implements IDjaI18n {
 
     public function npgettext($context, $singular, $plural, $count) {
         return $this->ungettext($singular, $plural, $count);
+    }
+
+}
+
+
+/**
+ * Default "one-shot" GLOBALS cache manager.
+ */
+class DjaGlobalsCache implements IDjaCacheManager {
+
+    private $_globals_key;
+
+    /**
+     * @param string $globals_key GLOBALS array key to store cache into.
+     */
+    public function __construct($globals_key='dja_cache') {
+        $this->setGlobalsKey($globals_key);
+    }
+
+    public function setGlobalsKey($key) {
+        $this->_globals_key = $key;
+    }
+
+    public function get($key, $default=null, $version=null) {
+        $gk = $this->_globals_key;
+        if (!isset($GLOBALS[$gk])) {
+            return $default;
+        }
+        $c = $GLOBALS[$gk];
+        if (isset($c[$key])) {
+            return $c[$key];
+        }
+        return $default;
+    }
+
+    public function set($key, $value, $timeout=null, $version=null) {
+        $gk = $this->_globals_key;
+        $GLOBALS[$gk][$key] = $value;
+    }
+
+}
+
+
+/**
+ * Dummy cache manager implementation - no caching really done.
+ */
+class DjaDummyCache implements IDjaCacheManager {
+
+    public function get($key, $default=null, $version=null) {
+        return $default;
+    }
+
+    public function set($key, $value, $timeout=null, $version=null) {}
+
+}
+
+
+/**
+ * Cache manager implementation storing cache in filesystem.
+ */
+class DjaFilebasedCache implements IDjaCacheManager {
+
+    const TMP = -42;
+    private $_dir;
+    private $_time_len = 10;
+    private $_default_timeout = 300;
+
+    /**
+     * @param string $dir Directory to store cache files into.
+     *     Defaults to system temporary directory.
+     */
+    public function __construct($dir=self::TMP) {
+        if ($dir===self::TMP) {
+            $dir = sys_get_temp_dir();
+        }
+        $this->setDir($dir);
+    }
+
+    public function setDir($dir) {
+        $this->_dir = $dir;
+    }
+
+    public function get($key, $default=null, $version=null) {
+        $fname = $this->keyToFile($key);
+
+        $f = @fopen($fname, 'rb');
+        if ($f) {
+            $exp = fread($f, $this->_time_len);
+            $now = time();
+            if ($exp < $now) {
+                $this->deleteFile($fname);
+                fclose($f);
+            } else {
+                $data = fread($f, filesize($fname));
+                fclose($f);
+                return unserialize($data);
+            }
+        }
+        return $default;
+    }
+
+    private function deleteFile($fname) {
+        @unlink($fname);
+        @rmdir(dirname($fname));
+    }
+
+    public function set($key, $value, $timeout=null, $version=null) {
+        $fname = $this->keyToFile($key);
+        $dirname = dirname($fname);
+
+        $dir_created = true;
+        if (!file_exists($dirname)) {
+            $dir_created = mkdir($dirname, 0777, true);
+        }
+
+        if ($dir_created) {
+            if ($timeout===null) {
+                $timeout = $this->_default_timeout;
+            }
+            file_put_contents($fname, (time() + $timeout) . serialize($value), LOCK_EX);
+        }
+    }
+
+    private function keyToFile($key) {
+        $path = md5($key);
+        $path = substr($path, 0, 2) . DIRECTORY_SEPARATOR . substr($path, 2, 2) . DIRECTORY_SEPARATOR . substr($path, 4);
+        return $this->_dir . DIRECTORY_SEPARATOR . $path;
     }
 
 }

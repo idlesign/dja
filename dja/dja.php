@@ -69,6 +69,11 @@ class Dja {
      * @var null|IDjaI18n
      */
     private static $_i18n = null;
+    /**
+     * @var null|IDjaCacheManager
+     */
+    private static $_cache = null;
+
 
     /**
      * Sets Dja settings values.
@@ -142,6 +147,8 @@ class Dja {
     /**
      * Returns object implementing internationalization functions.
      *
+     * Default interface: DjaI18n.
+     *
      * @static
      * @return IDjaI18n|null
      */
@@ -170,6 +177,8 @@ class Dja {
     /**
      * Returns URL Dispatcher object used by Dja to reverse URLs.
      *
+     * Default Dispatcher: DjaUrlDispatcher.
+     *
      * @static
      * @return IDjaUrlDispatcher|null
      */
@@ -190,25 +199,39 @@ class Dja {
      */
     public static function setUrlDispatcher($obj) {
         if (!($obj instanceof IDjaUrlDispatcher)){
-            throw new DjaException('Unable to use object not implementing IDjaUrlManager as URL Manager.');
+            throw new DjaException('Unable to use object not implementing IDjaUrlManager as URL Dispatcher.');
         }
         self::$_url_dispatcher = $obj;
     }
 
-    public static function getCache($key) {
-        // TODO Call generic cache interface.
-        if (!isset($GLOBALS['dja_cache'])) {
-            return null;
+    /**
+     * Returns Cache Manager object used by Dja.
+     *
+     * Default Manager: DjaGlobalsCache.
+     *
+     * @static
+     * @return IDjaCacheManager|null
+     */
+    public static function getCacheManager() {
+        if (self::$_cache === null) {
+            self::$_cache = new DjaGlobalsCache();
         }
-        $c = $GLOBALS['dja_cache'];
-        if (isset($c[$key])) {
-            return $c[$key][1];
-        }
-        return null;
+        return self::$_cache;
     }
 
-    public static function setCache($key, $value, $expires) {
-        $GLOBALS['dja_cache'][$key] = array($expires, $value);
+    /**
+     * Sets Cache Manager object used by Dja.
+     * Such an object is required to implement IDjaCacheManager interface.
+     *
+     * @static
+     * @param IDjaCacheManager $obj
+     * @throws DjaException
+     */
+    public static function setCacheManager($obj) {
+        if (!($obj instanceof IDjaCacheManager)){
+            throw new DjaException('Unable to use object not implementing IDjaCacheManager as Cache Manager.');
+        }
+        self::$_url_dispatcher = $obj;
     }
 
 }

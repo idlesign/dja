@@ -32,10 +32,11 @@ class CacheNode extends Node {
         unset ($vs_);
 
         $cache_key = 'template.cache.' . $this->fragment_name . '.'. md5($args);
-        $value = Dja::getCache($cache_key);
+        $manager = Dja::getCacheManager();
+        $value = $manager->get($cache_key);
         if ($value===null) {
             $value = $this->nodelist->render($context);
-            Dja::setCache($cache_key, $value, $expire_time);
+            $manager->set($cache_key, $value, $expire_time);
         }
         return $value;
     }
