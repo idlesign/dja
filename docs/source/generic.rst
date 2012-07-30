@@ -108,3 +108,51 @@ Dja allows you to replace generic Internationalization mechanism with a custom o
 
 To do this one should construct a class implementing IDjaI18n interface,
 and pass an object of that class into `Dja::setI18n()` before template rendering.
+
+
+
+Generic Cache Managers
+----------------------
+
+Dja offers not only several built-in cache managers, but also means to implement that of your own.
+Caching can be applied both to template parts (`cache` tag) and entire compiled template objects.
+
+To access current cache manager object use `Dja::getCacheManager()` method.
+
+Built-in managers:
+
+    * `DjaGlobalsCache`
+
+      The default cache manager, using GLOBALS array to keep cache.
+      Although used as the default, _this mechanism is almost entirely ineffective_, as
+      cached data is not shared among running threads.
+
+    * `DjaFilebasedCache`
+
+      This uses filesystem to store cache. Each cache entry is stored as a separate file
+      with serialized data.
+
+    * `DjaDummyCache`
+
+      Dummy cache, which doesn't actually cache, but rather implements the cache interface
+      without doing anything. Can be used in develepment.
+
+
+Cache manager tuning example::
+
+.. code-block:: php
+
+    <?php
+
+    // Let's use filebased cache instead of the default.
+    Dja::setCacheManager(new DjaFilebasedCache('/tmp/custom/temporaty/path/for/dja/'));
+
+
+Fetch interesting, though not strongly related, information on subject from https://docs.djangoproject.com/en/dev/topics/cache/
+
+
+Custom Cache Manager
+--------------------
+
+To create your own cache manager please implement IDjaCacheManager interface,
+and pass an object of that class into `Dja::setCacheManager()` before template rendering.
