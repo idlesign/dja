@@ -121,24 +121,24 @@ To access current cache manager object use `Dja::getCacheManager()` method.
 
 Built-in managers:
 
-    * `DjaGlobalsCache`
+* `DjaGlobalsCache`
 
-      The default cache manager, using GLOBALS array to keep cache.
-      Although used as the default, _this mechanism is almost entirely ineffective_, as
-      cached data is not shared among running threads.
+  The default cache manager, using GLOBALS array to keep cache.
+  Although used as the default, **this mechanism is almost entirely ineffective**, as
+  cached data is not shared among running threads.
 
-    * `DjaFilebasedCache`
+* `DjaFilebasedCache`
 
-      This uses filesystem to store cache. Each cache entry is stored as a separate file
-      with serialized data.
+  This uses filesystem to store cache. Each cache entry is stored as a separate file
+  with serialized data.
 
-    * `DjaDummyCache`
+* `DjaDummyCache`
 
-      Dummy cache, which doesn't actually cache, but rather implements the cache interface
-      without doing anything. Can be used in develepment.
+  Dummy cache, which doesn't actually cache, but rather implements the cache interface
+  without doing anything. Can be used in develepment.
 
 
-Cache manager tuning example::
+Cache manager tuning example:
 
 .. code-block:: php
 
