@@ -20,11 +20,32 @@ with templates essentials:
 Now when you're familiar with Django templates[, but not yet ready to quit PHP %)], take a look
 at a basic dja usage example:
 
+
 .. code-block:: php
 
     <?php
 
     // We'll certainly use dja, so we require it.
+    require_once 'dja/dja.php';
+
+    // Initialize 'TEMPLATE_DIRS' setting to point to our template directory(ies).
+    Dja::setSetting('TEMPLATE_DIRS', array('/home/idle/my/templates/are/here/'));
+
+    // Use shortcut render() method.
+    echo Dja::render('pages/another_page.html', array('title'=>'My title for another page'));
+
+
+.. note::
+
+    If TEMPLATE_DEBUG setting equals True `Dja::render()` will render pretty page with usefull debug information.
+
+
+Under the hood the example above does roughly the following::
+
+.. code-block:: php
+
+    <?php
+
     require_once 'dja/dja.php';
 
     // First we create a template object, passing to it a template source string.
@@ -39,25 +60,3 @@ at a basic dja usage example:
     // Now $result contains a string ready for output.
     echo $result;
 
-
-**Usage example**
-
-When you have a bunch of template files on disk and want dja to pick them up and use automatically,
-you can use the following approach:
-
-.. code-block:: php
-
-    <?php
-
-    // Again require dja.
-    require_once 'dja/dja.php';
-
-    // Dja class holds template engine settings (similar to settings.py of Django).
-    // We initialize 'TEMPLATE_DIRS' setting to point to our template directory(ies).
-    Dja::setSetting('TEMPLATE_DIRS', array('/home/idle/my/templates/here/'));
-
-    // Now using renderToString() shortcut we render template source from intro.html.
-    $result = DjaLoader::renderToString('intro.html', array('items' => array('who', 'is', 'who')));
-
-    // $result contains a string ready for output.
-    echo $result;
