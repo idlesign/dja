@@ -366,11 +366,12 @@ class PyLazyMethod {
     }
 
     public function __invoke() {
+        $input_args = func_get_args();
         $args_exp_ = py_inspect_getargspec(array($this->_obj, $this->_attr));
-        if (count($args_exp_[0]) > 0) {
+        if (count($args_exp_[0]) > count($input_args)) {  // Naive check.
             throw new TypeError(); // Simulate arguments required type error.
         }
-        return call_user_func_array(array($this->_obj, $this->_attr), func_get_args());
+        return call_user_func_array(array($this->_obj, $this->_attr), $input_args);
     }
 
 }
