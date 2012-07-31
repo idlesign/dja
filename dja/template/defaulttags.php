@@ -63,7 +63,7 @@ class CycleNode extends Node {
      * @param Context $context
      * @return SafeString|string
      */
-    public function render(&$context) {
+    public function render($context) {
         $obj_hash = spl_object_hash($this);
         if (!isset($context->render_context[$obj_hash])) {
             // First time the node is rendered in template

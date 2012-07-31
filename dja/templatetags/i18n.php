@@ -132,7 +132,13 @@ class BlockTranslateNode extends Node {
 
 class TranslateParser extends TokenParser {
 
-    public function top($parser) {
+    private $_base_parser;
+
+    public function setBaseParser($parser) {
+        $this->_base_parser = $parser;
+    }
+
+    public function top() {
         $value = $this->value();
 
         if ($value[0] == "'") {
@@ -153,7 +159,7 @@ class TranslateParser extends TokenParser {
             if ($tag == 'noop') {
                 $noop = True;
             } elseif ($tag == 'context') {
-                $message_context = $parser->compileFilter($this->value());
+                $message_context = $this->_base_parser->compileFilter($this->value());
             } elseif ($tag == 'as') {
                 $asvar = $this->tag();
             } else {
@@ -189,7 +195,8 @@ $lib->tag('trans', function($parser, $token) {
      * @var Token $token
      */
     $translate_parser = new TranslateParser($token->contents);
-    list($value, $noop, $asvar, $message_context) = $translate_parser->top($parser);
+    $translate_parser->setBaseParser($parser);
+    list($value, $noop, $asvar, $message_context) = $translate_parser->top();
     return new TranslateNode($parser->compileFilter($value), $noop, $asvar, $message_context);
 });
 
