@@ -253,7 +253,8 @@ class LoaderOrigin extends Origin {
     }
 
     public function reload() {
-        $res_ = $this->loader($this->loadname, $this->dirs);
+        $loader = $this->loader;
+        $res_ = $loader($this->loadname, $this->dirs);
         return $res_[0];
     }
 }
