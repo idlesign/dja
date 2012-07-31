@@ -49,7 +49,6 @@ class Dja {
         'TEMPLATE_STRING_IF_INVALID' => '',
         'TEMPLATE_LOADERS' => array(
             'loaders.filesystem.FilesystemLoader',
-            'loaders.app_directories.AppDirectoriesLoader'
         ),
         'TEMPLATE_DIRS' => array(),
         'ALLOWED_INCLUDE_ROOTS'=>array(),
@@ -232,6 +231,30 @@ class Dja {
             throw new DjaException('Unable to use object not implementing IDjaCacheManager as Cache Manager.');
         }
         self::$_url_dispatcher = $obj;
+    }
+
+    /**
+     * Simple rendering method.
+     *
+     * Handles Dja exceptions and renders pretty error
+     * page if TEMPLATE_DEBUG = True.
+     *
+     * @static
+     * @param string $template
+     * @param array $context
+     * @return string
+     * @throws DjaException
+     */
+    public static function render($template, $context) {
+        try {
+            $result = DjaLoader::renderToString($template, $context);
+        } catch (DjaException $e) {
+            if (!Dja::getSetting('TEMPLATE_DEBUG')) {
+                throw $e;
+            }
+            $result = DjaDebug::getTracebackHtml($template, $e);
+        }
+        return (string)$result;
     }
 
 }
