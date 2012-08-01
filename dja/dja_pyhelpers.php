@@ -418,6 +418,9 @@ class PyItertoolsCycle {
 
 
 function py_hasattr($obj, $attr) {
+    if (!is_object($obj)) {
+        return false;
+    }
     return (property_exists($obj, $attr) || method_exists($obj, $attr));
 }
 
