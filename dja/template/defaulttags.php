@@ -210,7 +210,7 @@ class ForNode extends Node {
             $values = str_split($values);  // TODO Check unicode handling.
         }
 
-        if (!is_array($values)) {
+        if (!is_array($values) && !($values instanceof Iterator)) {
             throw new RuntimeError('Noniterable "' . $values .  '" is passed to for loop.');
         }
 
