@@ -40,7 +40,7 @@ at a basic dja usage example:
     If TEMPLATE_DEBUG setting equals True `Dja::render()` will render pretty page with usefull debug information.
 
 
-Under the hood the example above does roughly the following::
+Under the hood the example above does roughly the following:
 
 .. code-block:: php
 
