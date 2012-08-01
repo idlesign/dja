@@ -26,6 +26,7 @@ Table of Contents
     generic
     extras
     extending
+    yii
 
 
 Cheers!
