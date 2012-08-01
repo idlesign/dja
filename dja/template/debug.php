@@ -152,9 +152,15 @@ class DjaDebug {
             $before = $during = $after = '';
 
             $linebreak_iter = function($source, &$last_pos) {
+                if ($last_pos===null) {
+                    $last_pos = 0;
+                    return $last_pos;
+                } elseif($last_pos===false) {
+                    return -1;
+                }
                 $p = strpos($source, "\n", $last_pos);
                 if ($p===false) {
-                    $last_pos++;
+                    $last_pos = strlen($source) + 1;  // TODO check unicode handling
                 } else {
                     $last_pos = $p+1;
                 }
@@ -162,8 +168,8 @@ class DjaDebug {
             };
 
             $num = 0;
-            $next = 0;
-            while ($linebreak_iter($template_source, $next)!==false) {
+            $next = null;
+            while (($r_ = $linebreak_iter($template_source, $next))!=-1) {
                 if ($start>=$upto && $end<=$next) {
                     $line = $num;
                     $before = escape(py_slice($template_source, $upto, $start));
@@ -172,6 +178,10 @@ class DjaDebug {
                 }
                 $source_lines[] = array($num, escape(py_slice($template_source, $upto, $next)));
                 $upto = $next;
+
+                if ($r_===false) {
+                    $next = false;
+                }
                 $num++;
             }
 
