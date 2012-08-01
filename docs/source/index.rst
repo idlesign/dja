@@ -24,6 +24,7 @@ Table of Contents
     intro
     quickstart
     generic
+    extras
     extending
 
 
