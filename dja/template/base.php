@@ -143,8 +143,7 @@ class DjaBase {
     /**
      * Load a template tag library module.
      *
-     * Verifies that the library contains a 'register' attribute, and
-     * returns that attribute as the representation of the library
+     * Verifies that the library file returns Library object.
      *
      * @static
      *
