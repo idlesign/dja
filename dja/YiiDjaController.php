@@ -14,8 +14,8 @@
  *         // Your code here.
  *     }
  *
- * In your controller action methods call $this->render() as usual, just keep
- * in mind that `view name` param is expected in the form of path
+ * In your controller action methods call $this->render() as usual, just bear
+ * in mind that `view name` param is expected in the form of a filepath
  * under your [theme] views directory, i.e. to render `{views_dir}/subdir/file.html`
  * dja expects 'views_subdir/file'.
  */

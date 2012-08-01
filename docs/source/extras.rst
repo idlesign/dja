@@ -13,7 +13,7 @@ This node class can be used as a template for custom naive if-like tags.
 This allows `{% if_name_is_mike name %}Hi, Mike!{% else %}Where is Mike?{% endif_name_is_mike %}`
 and alike constructions in templates.
 
-Th class exposes registerAsTag method to quick tag registration within a tag library:
+The class exposes registerAsTag method to quick tag registration within a tag library:
 
 .. code-block:: php
 
