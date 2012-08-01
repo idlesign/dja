@@ -1,7 +1,10 @@
-dja documentation
-=================
+Documenting dja
+===============
 
 *Dja is a bit of Django framework - its template engine - ported to PHP.*
+
+https://github.com/idlesign/dja
+
 
 .. warning::
 
