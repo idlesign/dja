@@ -1552,7 +1552,7 @@ class Variable {
      * @param Context $context
      *
      * @return PyLazyMethod|string
-     * @throws AttributeError|Exception|TypeError|VariableDoesNotExist
+     * @throws AttributeError|Exception|TypeError|KeyError|VariableDoesNotExist
      */
     private function resolveLookup($context) {
         $current = $context;
@@ -1563,7 +1563,11 @@ class Variable {
                     if (!($current instanceof ArrayAccess) && !is_array($current) && !is_string($current)) {
                         throw new TypeError(); // unsubscriptable object
                     }
-                    $current = $current[$bit];
+                    if (isset($current[$bit]) || array_key_exists($bit, $current)) {
+                        $current = $current[$bit];
+                    } else {
+                        throw new KeyError();
+                    }
                 } catch (Exception $e) { // TypeError, AttributeError, KeyError
                     try { // attribute lookup
                         $current = py_getattr($current, $bit);
