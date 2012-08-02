@@ -104,7 +104,7 @@ class BaseContext implements ArrayAccess {
 
     public function hasKey($key) {
         foreach ($this->dicts as $d) {
-            if (isset($d[$key])) {
+            if (isset($d[$key]) || array_key_exists($key, $d)) {
                 return True;
             }
         }
