@@ -49,7 +49,7 @@ class NaiveIfTemplateNode extends Node {
      */
     public function render($context) {
         $condition = $this->_condition;
-        if ($condition($this->_values)) {
+        if ($condition($this->_values, $context)) {
             return $this->nodelist_true->render($context);
         } elseif ($this->nodelist_false) {
             return $this->nodelist_false->render($context);
@@ -67,8 +67,9 @@ class NaiveIfTemplateNode extends Node {
      * @param Closure $condition
      */
     public static function registerAsTag($lib, $tag_name, $condition) {
+        $class = get_called_class();
         $lib->tag($tag_name,
-            function($parser, $token) use ($tag_name, $condition) {
+            function($parser, $token) use ($tag_name, $condition, $class) {
                 /**
                  * @var Parser $parser
                  * @var Token $token
@@ -86,7 +87,7 @@ class NaiveIfTemplateNode extends Node {
                 foreach (py_slice($bits, 1) as $bit) {
                     $values[] = $parser->compileFilter($bit);
                 }
-                return new self($nodelist_true, $nodelist_false, $values, $condition);
+                return new $class($nodelist_true, $nodelist_false, $values, $condition);
         });
     }
 

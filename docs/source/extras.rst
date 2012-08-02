@@ -26,7 +26,10 @@ The class exposes registerAsTag method to quick tag registration within a tag li
 
     // This registers `if_name_is_mike` if-like tag.
     NaiveIfTemplateNode::registerAsTag($lib, 'if_name_is_mike',
-        function ($value) { return $value=='Mike'; }  // This closure will test value on rendering.
+        function ($args, $context) {  // This closure will test value on rendering.
+            $name = $args[0];  // Our tag accepts only one argument - `name`.
+            return $name->resolve($context)=='Mike';
+        }
     );
 
     return $lib;
