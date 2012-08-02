@@ -164,7 +164,7 @@ class PyReMatchObject {
 
     private $_match = array();
 
-    public function __construct($match_arr, $match_all_mode = True) {
+    public function __construct($subj, $match_arr, $match_all_mode = True) {
         $this->_match = $match_arr;
         $last = array_pop($match_arr);
         if (isset($match_arr[0][1])) {
@@ -172,7 +172,11 @@ class PyReMatchObject {
         } else {
             $this->_start = $match_arr[0][1];
         }
-        $this->_end = ($last[1] + strlen(utf8_decode($last[0])));  // TODO Check unicode handling.
+        $this->_end = ($last[1] + strlen($last[0]));
+
+        // Convert byte offsets into charlen.
+        $this->_start = mb_strlen(substr($subj, 0, $this->_start), 'utf8');
+        $this->_end = mb_strlen(substr($subj, 0, $this->_end), 'utf8');
     }
 
     public function start() {
@@ -225,7 +229,7 @@ function py_re_match($re, $subj) {
     if (empty($match)) {
         return null;
     }
-    return new PyReMatchObject($match, False);
+    return new PyReMatchObject($subj, $match, False);
 }
 
 
@@ -238,7 +242,7 @@ class PyReFinditer implements Iterator, ArrayAccess {
         $matches = array();
         preg_match_all($re, $subj, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
         foreach ($matches as $match) {
-            $this->_matches[] = new PyReMatchObject($match);
+            $this->_matches[] = new PyReMatchObject($subj, $match, True);
         }
     }
 
