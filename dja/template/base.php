@@ -811,6 +811,7 @@ class Lexer {
         $this->template_string = $template_string;
         $this->origin = $origin;
         $this->lineno = 1;
+        $this->verbatim = False;
     }
 
     /**
@@ -841,11 +842,20 @@ class Lexer {
      * @return Token
      */
     public function createToken($token_string, $in_tag) {
-        if ($in_tag) {
+        if ($in_tag && py_str_starts_with($token_string, DjaBase::BLOCK_TAG_START)) {
+            $block_content = trim(py_slice($token_string, 2, -2));
+            if ($this->verbatim && $block_content == $this->verbatim) {
+                $this->verbatim = False;
+            }
+        }
+        if ($in_tag && !$this->verbatim) {
             if (py_str_starts_with($token_string, DjaBase::VARIABLE_TAG_START)) {
                 $token = new Token(DjaBase::TOKEN_VAR, trim(py_slice($token_string, 2, -2)));
             } elseif (py_str_starts_with($token_string, DjaBase::BLOCK_TAG_START)) {
-                $token = new Token(DjaBase::TOKEN_BLOCK, trim(py_slice($token_string, 2, -2)));
+                if (in_array(py_slice($block_content, null, 9), array('verbatim', 'verbatim '))) {
+                    $this->verbatim = 'end' . $block_content;
+                }
+                $token = new Token(DjaBase::TOKEN_BLOCK, $block_content);
             } elseif (py_str_starts_with($token_string, DjaBase::COMMENT_TAG_START)) {
                 $content = '';
                 if (strpos($token_string, DjaBase::TRANSLATOR_COMMENT_MARK) !== False) {

@@ -1604,6 +1604,13 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
 //            'static-statictag01'=>array('{% load static %}{% static "admin/base.css" %}', array(), Dja::urljoin(Dja::getSetting('STATIC_URL'), 'admin/base.css')),
 //            'static-statictag02'=>array('{% load static %}{% static base_css %}', array('base_css'=>'admin/base.css'), Dja::urljoin(Dja::getSetting('STATIC_URL'), 'admin/base.css')),
 
+            // Verbatim template tag outputs contents without rendering.
+            'verbatim-tag01'=>array('{% verbatim %}{{bare   }}{% endverbatim %}', array(), '{{bare   }}'),
+            'verbatim-tag02'=>array('{% verbatim %}{% endif %}{% endverbatim %}', array(), '{% endif %}'),
+            'verbatim-tag03'=>array("{% verbatim %}It's the {% verbatim %} tag{% endverbatim %}", array(), "It's the {% verbatim %} tag"),
+            'verbatim-tag04'=>array('{% verbatim %}{% verbatim %}{% endverbatim %}{% endverbatim %}', array(), 'TemplateSyntaxError'),
+            'verbatim-tag05'=>array('{% verbatim %}{% endverbatim %}{% verbatim %}{% endverbatim %}', array(), ''),
+            'verbatim-tag06'=>array("{% verbatim special %}Don't {% endverbatim %} just yet{% endverbatim special %}", array(), "Don't {% endverbatim %} just yet"),
         );
 
         return $tests;

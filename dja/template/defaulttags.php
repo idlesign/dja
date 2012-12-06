@@ -671,6 +671,26 @@ class URLNode extends Node {
 }
 
 
+class VerbatimNode extends Node {
+
+    /**
+     * @param SafeString $content
+     */
+    public function __construct($content) {
+        $this->content = $content;
+    }
+
+    /**
+     * @param Context $context
+     * @return SafeString|string
+     */
+    public function render($context) {
+        return $this->content;
+    }
+
+}
+
+
 class WidthRatioNode extends Node {
 
     /**
@@ -1309,6 +1329,18 @@ $lib->tag('url', function($parser, $token) {
     }
 
     return new URLNode($viewname, $args, $kwargs, $asvar, True);
+});
+
+
+$lib->tag('verbatim', function($parser, $token) {
+    /**
+     * @var Parser $parser
+     * @var Token $token
+     * @var NodeList $nodelist
+     */
+    $nodelist = $parser->parse(array('endverbatim'));
+    $parser->deleteFirstToken();
+    return new VerbatimNode($nodelist->render(new Context()));
 });
 
 
