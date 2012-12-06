@@ -1223,7 +1223,7 @@ $lib->tag('templatetag', function($parser, $token) {
     }
     $tag = $bits[1];
     if (!isset(TemplateTagNode::$mapping[$tag])) {
-        throw new TemplateSyntaxError('Invalid templatetag argument: \'' . $tag . '\'. Must be one of: ' . array_keys(TemplateTagNode::$mapping));
+        throw new TemplateSyntaxError('Invalid templatetag argument: \'' . $tag . '\'. Must be one of: ' . join(', ', array_keys(TemplateTagNode::$mapping)));
     }
     return new TemplateTagNode($tag);
 });
