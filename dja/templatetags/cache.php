@@ -18,7 +18,7 @@ class CacheNode extends Node {
         }
 
         if (!is_numeric($expire_time)) {
-            throw new TemplateSyntaxError('"cache" tag got a non-integer timeout value: ' . $expire_time);
+            throw new TemplateSyntaxError('"cache" tag got a non-integer timeout value: ' . print_r($expire_time, true));
         }
         $expire_time = (int)$expire_time;
 
