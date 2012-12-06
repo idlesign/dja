@@ -93,10 +93,24 @@ class DjaLoader {
      * @return Template
      */
     public static function getTemplate($template_name) {
-        list($template, $origin) = self::findTemplate($template_name);
-        if (!py_hasattr($template, 'render')) {
-            // template needs to be compiled
-            $template = self::getTemplateFromString($template, $origin, $template_name);
+        $self = get_called_class();
+        $get_template = function() use ($template_name, $self) {
+            list($template, $origin) = $self::findTemplate($template_name);
+            if (!py_hasattr($template, 'render')) {
+                // template needs to be compiled
+                $template = $self::getTemplateFromString($template, $origin, $template_name);
+            }
+            return $template;
+        };
+
+        $use_cache = Dja::getSetting('TEMPLATE_CACHE');
+        if (!$use_cache) {
+            return $get_template();
+        }
+        $cacher = Dja::getCacheManager();
+        if (!$template=$cacher->get($template_name)) {
+            $template = $get_template();
+            $cacher->set($template_name, $template);
         }
         return $template;
     }

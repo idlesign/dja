@@ -45,6 +45,7 @@ class Dja {
         'SHORT_DATE_FORMAT' => 'm/d/Y',
         'SHORT_DATETIME_FORMAT' => 'm/d/Y P',
 
+        'TEMPLATE_CACHE' => False,
         'TEMPLATE_DEBUG' => False,
         'TEMPLATE_STRING_IF_INVALID' => '',
         'TEMPLATE_LOADERS' => array(
@@ -242,10 +243,12 @@ class Dja {
      * @static
      * @param string $template
      * @param array $context
+     * @param bool $use_cache Use compiled template object cache.
      * @return string
      * @throws DjaException
      */
-    public static function render($template, $context) {
+    public static function render($template, $context, $use_cache=True) {
+        Dja::setSetting('TEMPLATE_CACHE', $use_cache);
         try {
             $result = DjaLoader::renderToString($template, $context);
         } catch (DjaException $e) {
