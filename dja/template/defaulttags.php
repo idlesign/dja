@@ -475,6 +475,11 @@ class RegroupNode extends Node {
         $this->var_name = $var_name;
     }
 
+    public function resolveExpression($obj, $context) {
+        $context[$this->var_name] = $obj;
+        return (string)$this->expression->resolve($context, True);
+    }
+
     /**
      * @param Context $context
      * @return SafeString|string
@@ -490,7 +495,7 @@ class RegroupNode extends Node {
         $v_pre_ = array();
         $v_out_ = array();
         foreach ($obj_list as $item_) {
-            $k_ = $this->expression->resolve($item_);
+            $k_ = $this->resolveExpression($item_, $context);
             if (!isset($v_pre_[$k_])) {
                 $v_pre_[$k_] = array();
             }
@@ -720,6 +725,9 @@ class WidthRatioNode extends Node {
 
         if (!is_numeric($max_width)) {
             throw new TemplateSyntaxError('widthratio final argument must be an number');
+        }
+        if (!is_numeric($value) || !is_numeric($max_value)) {
+            return '';
         }
 
         $value = (float)$value;
@@ -1215,8 +1223,8 @@ $lib->tag('regroup', function($parser, $token) {
     if (py_slice($lastbits_reversed[1], null, null, -1) != 'as') {
         throw new TemplateSyntaxError('next-to-last argument to \'regroup\' tag must be \'as\'');
     }
-    $expression = $parser->compileFilter(py_slice($lastbits_reversed[2], null, null, -1));
     $var_name = py_slice($lastbits_reversed[0], null, null, -1);
+    $expression = $parser->compileFilter($var_name . DjaBase::VARIABLE_ATTRIBUTE_SEPARATOR . py_slice($lastbits_reversed[2], null, null, -1));
     return new RegroupNode($target, $expression, $var_name);
 });
 

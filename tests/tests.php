@@ -1333,6 +1333,36 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
                           '{% endfor %}',
                           array(), ''),
 
+            // Regression tests for #17675
+            // The date template filter has expects_localtime = True
+            'regroup03'=>array('{% regroup data by at|date:"m" as grouped %}' .
+                          '{% for group in grouped %}' .
+                          '{{ group.grouper }}:' .
+                          '{% for item in group.list %}' .
+                          '{{ item.at|date:"d" }}' .
+                          '{% endfor %},' .
+                          '{% endfor %}',
+                          array('data'=>array(
+                                array('at'=>mktime(0, 0, 0, 2, 14, 2012)),
+                                array('at'=>mktime(0, 0, 0, 2, 28, 2012)),
+                                array('at'=>mktime(0, 0, 0, 7, 4, 2012))
+                              )),
+                          '02:1428,07:04,'),
+            // The join template filter has needs_autoescape = True
+            'regroup04'=>array('{% regroup data by bar|join:"" as grouped %}' .
+                          '{% for group in grouped %}' .
+                          '{{ group.grouper }}:' .
+                          '{% for item in group.list %}' .
+                          '{{ item.foo|first }}' .
+                          '{% endfor %},' .
+                          '{% endfor %}',
+                          array('data'=>array(
+                                    array('foo'=>'x', 'bar'=>array('ab', 'c')),
+                                    array('foo'=>'y', 'bar'=>array('a', 'bc')),
+                                    array('foo'=>'z', 'bar'=>array('a', 'd'))
+                          )),
+                          'abc:xy,ad:z,'),
+
             // ### SSI TAG ########################################################
 // TODO ssi tag,
 //            // Test normal behavior
@@ -1404,6 +1434,14 @@ class TemplatesTests extends PHPUnit_Framework_TestCase {
 
             // #10043=> widthratio should allow max_width to be a variable
             'widthratio11'=>array('{% widthratio a b c %}', array('a'=>50,'b'=>100, 'c'=> 100), '50'),
+
+            // #18739: widthratio should handle None args consistently with non-numerics
+            'widthratio12a'=>array('{% widthratio a b c %}', array('a'=>'a','b'=>100,'c'=>100), ''),
+            'widthratio12b'=>array('{% widthratio a b c %}', array('a'=>null,'b'=>100,'c'=>100), ''),
+            'widthratio13a'=>array('{% widthratio a b c %}', array('a'=>0,'b'=>'b','c'=>100), ''),
+            'widthratio13b'=>array('{% widthratio a b c %}', array('a'=>0,'b'=>null,'c'=>100), ''),
+            'widthratio14a'=>array('{% widthratio a b c %}', array('a'=>0,'b'=>100,'c'=>'c'), 'TemplateSyntaxError'),
+            'widthratio14b'=>array('{% widthratio a b c %}', array('a'=>0,'b'=>100,'c'=>null), 'TemplateSyntaxError'),
 
             // ### WITH TAG ########################################################
             'with01'=>array('{% with key=dict.key %}{{ key }}{% endwith %}', array('dict'=>array('key'=>50)), '50'),
