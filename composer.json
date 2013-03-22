@@ -1,0 +1,32 @@
+{
+    "name": "idlesign/dja",
+    "description": "Django template engine ported to PHP",
+    "homepage": "https://github.com/idlesign/dja",
+    "type": "library",
+    "keywords": ["templates","django","template engine"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Igor 'idle sign' Starikov",
+            "email": "idlesign@yandex.ru",
+            "homepage": "http://idlesign.ya.ru",
+            "role": "Maintainer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    },
+    "suggest": {
+        "yiisoft/yii": "dja comes with Yii Framework controller class"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/idlesign/dja"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/idlesign/dja/issues",
+        "source": "https://github.com/idlesign/dja"
+    }
+}
