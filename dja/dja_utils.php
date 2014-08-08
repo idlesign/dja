@@ -554,8 +554,27 @@ function dja_date_format($value, $format = null, $use_l10n = null) {
 
     if ($use_l10n || ($use_l10n === null && Dja::getSetting('USE_L10N'))) {
         $lang = Dja::getSetting('LANGUAGE_CODE');
-        $ft = new IntlDateFormatter($lang, IntlDateFormatter::FULL, IntlDateFormatter::FULL);
-        return $ft->format($value);
+        // Эксперимент: формат терялся
+        // Список замен НЕПОЛНЫЙ
+        
+        $translateDateFormatToICUPattern = function($format) {
+            $map = ["'"=>"''",'d'=>'dd','D'=>'eee','jS'=>'d','j'=>'d','l'=>'eeee','N'=>'c','S'=>'','w'=>'e','z'=>'D','W'=>'w','F'=>'MMMM','m'=>'MM','M'=>'MMM','n'=>'M','t'=>'','L'=>'','o'=>'Y','y'=>'yy','Y'=>'y','A'=>'a','B'=>'','g'=>'h','G'=>'H','h'=>'hh','H'=>'HH','i'=>'mm','s'=>'ss','u'=>'','e'=>'vv','I'=>'','O'=>'xx','P'=>'xxx','T'=>'z','Z'=>'','c'=>"y-MM-dd'T'HH:mm:ssxxx",'u'=>'','r'=>'eee,ddMMMyHH:mm:ssxx'];
+
+            return strtr($format, $map);
+        };
+        
+        $format = $translateDateFormatToICUPattern($format);        
+        
+        if($value instanceof DateTime) {
+            $tz = $value->getTimeZone()->getName();
+        } else {
+            $tz = null;
+        }
+        
+        $ft = new IntlDateFormatter($lang, IntlDateFormatter::FULL, IntlDateFormatter::FULL, $tz, null, $format);
+        
+        return $ft->format($value);                
+        
     } elseif ($format=='DATE_FORMAT') {
         $format = Dja::getSetting('DATE_FORMAT');
     } elseif ($format=='SHORT_DATE_FORMAT') {
@@ -565,7 +584,11 @@ function dja_date_format($value, $format = null, $use_l10n = null) {
     // Mimic Django.
     $format = str_replace(array('N', 'e'), array('M.', 'O'), $format);
 
-    return date($format, $value);
+    if($value instanceof DateTime) {
+        return $value->format($format);
+    } else {
+        return date($format, $value);
+    }
 }
 
 
@@ -579,7 +602,7 @@ function dja_date_format($value, $format = null, $use_l10n = null) {
  */
 function dja_date($value, $arg = null) {
 
-    if (!$value || !is_numeric($value)) {
+    if (!$value || !(is_numeric($value) || $value instanceof DateTime)) {
         return '';
     }
     if ($arg === null) {
