@@ -1599,7 +1599,7 @@ class Variable {
                     }
                 }
 
-                if (is_callable($current)) {
+                if (is_callable($current) && !is_string($current) && !is_array($current)) {
                     if (py_getattr($current, 'do_not_call_in_templates', False)) {
                     } elseif (py_getattr($current, 'alters_data', False)) {
                         $current = Dja::getSetting('TEMPLATE_STRING_IF_INVALID');
